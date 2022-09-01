@@ -6,12 +6,12 @@ export default function RobotMonitoring() {
     <Grid templateRows={{ base: "", md: "1fr auto auto" }} templateColumns={{ base: "", md: "repeat(3, 1fr)" }} gap={{ sm: 3, md: 5, lg: 6 }} p={{ sm: 3, md: 5, lg: 6 }} minH='100vh'>
 
       {/* MAP */}
-      <GridItem rowSpan={2} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem rowSpan={{ base: 1, lg: 2 }} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>Map / Robot Position</Heading>
       </GridItem>
 
       {/* CAM */}
-      <GridItem rowSpan={1} colSpan={2} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem rowSpan={1} colSpan={{ base: 1, lg: 2 }} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>CAM</Heading>
       </GridItem>
 
@@ -24,7 +24,7 @@ export default function RobotMonitoring() {
       </GridItem>
 
       {/* ROBOT STATUS */}
-      <GridItem rowSpan={2} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem rowSpan={{ base: 1, lg: 2 }} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>Robot Status</Heading>
         <Flex>
           <Box>
@@ -35,7 +35,7 @@ export default function RobotMonitoring() {
             <Text>Battery</Text>
             <Text>Internet Connection</Text>
           </Box>
-          <Spacer/>
+          <Spacer />
           <Box>
             <Text>Ready</Text>
             <Text>5 m/s</Text>

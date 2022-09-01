@@ -18,7 +18,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [room, setRoom] = useState("control-room/preparation-setup");
 
-  let navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleLogin = () => {
     navigate(room)

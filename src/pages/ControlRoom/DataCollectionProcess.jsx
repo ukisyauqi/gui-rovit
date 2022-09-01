@@ -1,5 +1,6 @@
 import { Box, Button, Center, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import bram from "../../assets/bram.png"
 
 export default function DataCollectionProcess() {
   return (
@@ -8,7 +9,7 @@ export default function DataCollectionProcess() {
       {/* PATIENT DATA */}
       <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Center flexDirection="column" h="full">
-          <Box rounded='full' w={48} h={48} bg='url(https://i.postimg.cc/CKPp917F/bram.png)' bgRepeat="no-repeat" bgSize="cover"></Box>
+          <Box rounded='full' w={48} h={48} bg={`url(${bram})`} bgRepeat="no-repeat" bgSize="cover"></Box>
           <Text fontSize="2xl" mt={4}>Bramantya Wilsa</Text>
           <Text mt={4}>
             Age: 25 <br />
@@ -20,7 +21,7 @@ export default function DataCollectionProcess() {
             Blood Pressure (sys/dia): 100 <br />
           </Text>
           <Spacer />
-          <Button colorScheme='teal' w="full" mt={4}>Open Patient Data</Button>
+          <Button colorScheme='teal' w="full" mt={8}>Open Patient Data</Button>
         </Center>
       </GridItem>
 
