@@ -1,8 +1,10 @@
 import { Box, Button, Center, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import bram from "../../assets/bram.png"
+import { connect } from "simple-web-serial";
 
 export default function DataCollectionProcess() {
+ 
   return (
     <Grid templateColumns={{ base: "", md: "auto 1fr" }} gap={{ sm: 3, md: 5, lg: 6 }} p={{ sm: 3, md: 5, lg: 6 }} minH='100vh'>
 
@@ -36,7 +38,7 @@ export default function DataCollectionProcess() {
           p={{ base: 3, lg: 4 }}
           border="3px solid #E3EFF3"
         >
-          
+
           <GridItem rowSpan={3} borderRight={{ lg: "3px solid #E3EFF3" }} pr={{ lg: 4 }}>
             {/* HR */}
             <Box h="50%" borderBottom="3px solid #E3EFF3">
@@ -69,7 +71,7 @@ export default function DataCollectionProcess() {
               <Text fontWeight="semibold" fontSize="lg">Blood Pressure (DIA)</Text>
             </Box>
           </GridItem>
-          
+
         </Grid>
       </GridItem>
     </Grid>

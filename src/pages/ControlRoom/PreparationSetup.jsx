@@ -22,7 +22,7 @@ export default function PreparationSetup() {
         <Flex direction='column' h="full">
           <Heading fontSize="xl" fontWeight="semibold" mb={3}>Set Destination Room</Heading>
           <OrderedList>
-            {selectedRooms.map((room) => <ListItem>Room: {room}</ListItem>)}
+            {selectedRooms.map((room,i) => <ListItem key={i}>Room: {room}</ListItem>)}
           </OrderedList>
           <Spacer />
           <Flex justifyContent="space-around">
@@ -32,7 +32,7 @@ export default function PreparationSetup() {
               <MenuButton as={Button} size="sm" colorScheme="teal">Add Room</MenuButton>
               <MenuList p={0}>
                 {roomList.map((room, i) => <>
-                  <MenuItem p={0}>
+                  <MenuItem p={0} key={i}>
                     <Button onClick={() => setSelectedRooms((prev) => [...prev, roomList[i]])} variant="unstyled" w="100%" justifyContent="flex-start">
                       <Text textAlign="left" px={4}>
                         Room {room}
