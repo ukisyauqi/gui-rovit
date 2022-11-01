@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Table, TableContainer, Tbody, Td, Text, Tr, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
+
 export default function RobotMonitoring() {
   return (
     <Grid templateRows={{ base: "", md: "1fr auto auto" }} templateColumns={{ base: "", md: "repeat(3, 1fr)" }} gap={{ sm: 3, md: 5, lg: 6 }} p={{ sm: 3, md: 5, lg: 6 }} minH='100vh'>

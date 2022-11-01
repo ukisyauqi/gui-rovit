@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, flattenTokens, Flex, Grid, GridItem, Heading, HStack, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { writeRTDB } from "../../firebase";
 
 export default function PreparationSetup() {
   const roomList = ["A", "B", "C", "D"]
@@ -8,6 +9,22 @@ export default function PreparationSetup() {
   const [middleItem, setMiddleItem] = useState("")
   const [lowerItem, setLowerItem] = useState("")
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const openLowerHold = () => {
+    writeRTDB("open", true)
+    writeRTDB("close", false)
+  }
+
+  const closeLowerHold = () => {
+    writeRTDB("open", false)
+    writeRTDB("close", true)
+  }
+
+  const release = () => {
+    writeRTDB("open", false)
+    writeRTDB("close", false)
+  }
+
 
   return (
     <Grid templateRows={{ base: "", md: "1fr auto" }} templateColumns={{ base: "", md: "repeat(3, 1fr)" }} gap={{ sm: 3, md: 5, lg: 6 }} p={{ sm: 3, md: 5, lg: 6 }} minH='100vh'>
@@ -22,7 +39,7 @@ export default function PreparationSetup() {
         <Flex direction='column' h="full">
           <Heading fontSize="xl" fontWeight="semibold" mb={3}>Set Destination Room</Heading>
           <OrderedList>
-            {selectedRooms.map((room,i) => <ListItem key={i}>Room: {room}</ListItem>)}
+            {selectedRooms.map((room, i) => <ListItem key={i}>Room: {room}</ListItem>)}
           </OrderedList>
           <Spacer />
           <Flex justifyContent="space-around">
@@ -119,7 +136,11 @@ export default function PreparationSetup() {
           <Spacer />
           <Button mt={4} colorScheme='teal'>Open Upper Drawer</Button>
           <Button mt={4} colorScheme='teal'>Open Middle Drawer</Button>
-          <Button mt={4} colorScheme='teal'>Open Lower Drawer</Button>
+          <HStack mt={4}>
+            <Button colorScheme='teal' onMouseDown={openLowerHold} onMouseUp={release}>Open Lower Drawer</Button>
+            <Button colorScheme='teal' onMouseDown={closeLowerHold} onMouseUp={release}>Close Lower Drawer</Button>
+          </HStack>
+
         </Flex>
       </GridItem>
 
