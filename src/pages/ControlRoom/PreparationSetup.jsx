@@ -1,4 +1,4 @@
-import { Box, Button, flattenTokens, Flex, Grid, GridItem, Heading, HStack, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, flattenTokens, Flex, Grid, GridItem, Heading, HStack, Image, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { writeRTDB } from "../../firebase";
 
@@ -10,19 +10,44 @@ export default function PreparationSetup() {
   const [lowerItem, setLowerItem] = useState("")
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const openLowerHold = () => {
-    writeRTDB("open", true)
-    writeRTDB("close", false)
+  const openLower= () => {
+    writeRTDB("lower-state", 1)
   }
+  const closeLower = () => {
+    writeRTDB("lower-state", 3)
+  } 
 
-  const closeLowerHold = () => {
-    writeRTDB("open", false)
-    writeRTDB("close", true)
+  const openMiddle= () => {
+    writeRTDB("middle-state", 1)
   }
+  const closeMiddle = () => {
+    writeRTDB("middle-state", 3)
+  } 
+
+  const openUpper= () => {
+    writeRTDB("upper-state", 1)
+    setTimeout(() => {
+      writeRTDB("upper-state", 2)
+    }, 10000);
+    setTimeout(() => {
+      writeRTDB("upper-state", 3)
+    }, 15000);
+    setTimeout(() => {
+      writeRTDB("upper-state", 0)
+    }, 25000);
+    
+  }
+  const closeUpper = () => {
+    writeRTDB("upper-state", 3)
+    setTimeout(() => {
+      writeRTDB("upper-state", 0)
+    }, 10000);
+  } 
 
   const release = () => {
-    writeRTDB("open", false)
-    writeRTDB("close", false)
+    writeRTDB("upper-state", 0)
+    writeRTDB("middle-state", 0)
+    writeRTDB("lower-state", 0)
   }
 
 
@@ -32,6 +57,9 @@ export default function PreparationSetup() {
       {/* MAP */}
       <GridItem rowSpan={2} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold">Map / Robot Position</Heading>
+        <Center h="full">
+          <Image src="https://iili.io/HnnuQGp.png" w="180px" />
+        </Center>
       </GridItem>
 
       {/* SET DESTIANTION ROOM */}
@@ -134,12 +162,18 @@ export default function PreparationSetup() {
         <Flex h="full" direction="column">
           <Heading fontSize="xl" fontWeight="semibold" mb={3}>Open Drawer</Heading>
           <Spacer />
-          <Button mt={4} colorScheme='teal'>Open Upper Drawer</Button>
-          <Button mt={4} colorScheme='teal'>Open Middle Drawer</Button>
-          <HStack mt={4}>
-            <Button colorScheme='teal' onMouseDown={openLowerHold} onMouseUp={release}>Open Lower Drawer</Button>
-            <Button colorScheme='teal' onMouseDown={closeLowerHold} onMouseUp={release}>Close Lower Drawer</Button>
-          </HStack>
+          <Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onClick={openUpper} size="sm" w={40} mr={4}>Open Upper Drawer</Button>
+            <Button colorScheme='teal' onClick={closeUpper} size="sm" w={40}>Close Upper Drawer</Button>
+          </Flex>
+          <Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onClick={openMiddle} size="sm" w={40} mr={4}>Open Middle Drawer</Button>
+            <Button colorScheme='teal' onClick={closeMiddle} size="sm" w={40}>Close Middle Drawer</Button>
+          </Flex>
+          <Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onClick={openLower} size="sm" w={40} mr={4} >Open Lower Drawer</Button>
+            <Button colorScheme='teal' onClick={closeLower} size="sm" w={40} >Close Lower Drawer</Button>
+          </Flex>
 
         </Flex>
       </GridItem>
@@ -147,3 +181,18 @@ export default function PreparationSetup() {
     </Grid>
   );
 }
+
+/*
+<Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onMouseDown={openUpper} onMouseUp={release} size="sm" w={40} mr={4}>Open Upper Drawer</Button>
+            <Button colorScheme='teal' onMouseDown={closeUpper} onMouseUp={release} size="sm" w={40}>Close Upper Drawer</Button>
+          </Flex>
+          <Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onMouseDown={openMiddle} onMouseUp={release} size="sm" w={40} mr={4}>Open Middle Drawer</Button>
+            <Button colorScheme='teal' onMouseDown={closeMiddle} onMouseUp={release} size="sm" w={40}>Close Middle Drawer</Button>
+          </Flex>
+          <Flex mt={4} justifyContent="center">
+            <Button colorScheme='teal' onMouseDown={openLower} onMouseUp={release} size="sm" w={40} mr={4} >Open Lower Drawer</Button>
+            <Button colorScheme='teal' onMouseDown={closeLower} onMouseUp={release} size="sm" w={40} >Close Lower Drawer</Button>
+          </Flex>
+*/

@@ -1,7 +1,10 @@
+import { Box } from '@chakra-ui/react'
 import React from 'react'
 
 export default function ManualNavigation() {
   return (
-    <div>ManualNavigation</div>
+    <Box h="100vh" overflow="hidden">
+      
+    </Box>
   )
 }

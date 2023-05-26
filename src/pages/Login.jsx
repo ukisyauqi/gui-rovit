@@ -26,6 +26,7 @@ export default function Login() {
 
   return (
     <Flex w="100vw" h="100vh" overflow="hidden">
+
       <Center flex="1" bg="teal.50">
         <Box px={10} textAlign="center">
           <Heading>MR-IAT Robot Covid</Heading>
@@ -39,6 +40,7 @@ export default function Login() {
           </Text>
         </Box>
       </Center>
+
       <Center flex="1">
         <Box>
           <Heading textAlign="center">Login Authentication</Heading>
@@ -58,6 +60,7 @@ export default function Login() {
           <Button colorScheme="teal" w="full" onClick={handleLogin}>Login</Button>
         </Box>
       </Center>
+      
     </Flex>
   );
 }

@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Table, TableContainer, Tbody, Td, Text, Tr, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, Grid, GridItem, Heading, Image, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Table, TableContainer, Tbody, Td, Text, Tr, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import Webcam from "react-webcam";
 
 
 export default function RobotMonitoring() {
@@ -9,19 +10,34 @@ export default function RobotMonitoring() {
       {/* MAP */}
       <GridItem rowSpan={{ base: 1, lg: 2 }} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>Map / Robot Position</Heading>
+        <Center>
+          <Image src="https://iili.io/HnnuQGp.png" w="180px" />
+        </Center>
       </GridItem>
 
       {/* CAM */}
       <GridItem rowSpan={1} colSpan={{ base: 1, lg: 2 }} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>CAM</Heading>
+        <Webcam
+          audio={false}
+          height={620}
+          width={1280}
+          videoConstraints={{
+            width: 1280,
+            height: 610,
+            facingMode: "user"
+          }}
+        >
+
+        </Webcam>
       </GridItem>
 
       {/* DRAWER ITEMS */}
       <GridItem rowSpan={1} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>Drawer Items</Heading>
-        <Text>Upper: asdasd</Text>
-        <Text>Middle: asdasd</Text>
-        <Text>Lower: asdasd</Text>
+        <Text>Upper: Sop</Text>
+        <Text>Middle: Susu</Text>
+        <Text>Lower: Paracetamol</Text>
       </GridItem>
 
       {/* ROBOT STATUS */}
@@ -57,7 +73,7 @@ export default function RobotMonitoring() {
       {/* ONGOING PROCESS */}
       <GridItem rowSpan={1} colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={3}>Ongoing Process</Heading>
-        <Text>Medical Check Up..</Text>
+        <Text>Medical Check Up...</Text>
       </GridItem>
     </Grid>
   )
