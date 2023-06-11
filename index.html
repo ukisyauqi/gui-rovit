@@ -5,10 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
-    <script lang="text/javascript" src="./node_modules/simple-web-serial/dist/simple-serial.min.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
   </head>
   <body>
-    <div id="root"></div>    
+    <div id="root"></div>   
+    <py-config>
+      packages = ["matplotlib", "pandas", "heartpy"]
+    </py-config> 
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

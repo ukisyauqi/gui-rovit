@@ -80,6 +80,7 @@ const SidebarContent = () => {
         {/* MEDICAL CHECK UP */}
         <Text fontWeight="semibold" pl={4} pt={4} pb={2} fontSize="lg">Medical Check-Up</Text>
         <NavLink style={styleNavLink} to="data-colection-process">Data Collection Process</NavLink>
+        <NavLink style={styleNavLink} to="bp-estimation">BP Estimation</NavLink>
         <NavLink style={styleNavLink} to="patients-data">Patients Data</NavLink>
 
       </Box>

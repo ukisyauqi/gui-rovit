@@ -23,7 +23,7 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
  
- bool signupOK = false;
+bool signupOK = false;
 unsigned long sendDataPrevMillis = 0;
 const int openDrawerPin = 4;
 const int closeDrawerPin = 5;
@@ -38,37 +38,37 @@ void setup() {
   pinMode(UVPin, OUTPUT);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.print("Connecting to Wi-Fi");
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print(".");
-        delay(300);
-    }
-    Serial.println();
-    Serial.print("Connected with IP: ");
-    Serial.println(WiFi.localIP());
-    Serial.println();
- 
-    Serial.printf("Firebase Client v%s\n\n", FIREBASE_CLIENT_VERSION);
- 
-    config.api_key = API_KEY;
-    config.database_url = DATABASE_URL;
- 
-    Firebase.reconnectWiFi(true);
- 
-    /* Sign Up Anonymous User*/
-    Serial.print("Sign up new user... ");
-    if (Firebase.signUp(&config, &auth, "", ""))
-    {
-        Serial.println("ok");
-        signupOK = true;
-    }
-    else
-        Serial.printf("%s\n", config.signer.signupError.message.c_str());
- 
-    config.token_status_callback = tokenStatusCallback;
- 
-    Firebase.begin(&config, &auth);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+      Serial.print(".");
+      delay(300);
+  }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
+  Serial.printf("Firebase Client v%s\n\n", FIREBASE_CLIENT_VERSION);
+
+  config.api_key = API_KEY;
+  config.database_url = DATABASE_URL;
+
+  Firebase.reconnectWiFi(true);
+
+  /* Sign Up Anonymous User*/
+  Serial.print("Sign up new user... ");
+  if (Firebase.signUp(&config, &auth, "", ""))
+  {
+      Serial.println("ok");
+      signupOK = true;
+  }
+  else
+      Serial.printf("%s\n", config.signer.signupError.message.c_str());
+
+  config.token_status_callback = tokenStatusCallback;
+
+  Firebase.begin(&config, &auth);
 }
 
 void loop() {

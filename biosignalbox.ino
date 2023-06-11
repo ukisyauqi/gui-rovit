@@ -27,8 +27,7 @@ void tcaselect(uint8_t i)
 
 void setup()
 {
-  while (!Serial)
-    ;
+  while (!Serial);
   delay(1000);
   Wire.begin();
   Serial.begin(9600);

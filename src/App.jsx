@@ -8,6 +8,7 @@ import PreparationSetup from "./pages/ControlRoom/PreparationSetup";
 import RobotMonitoring from "./pages/ControlRoom/RobotMonitoring";
 import Login from "./pages/Login";
 import PatientRoom from "./pages/PatientRoom/PatientRoom";
+import BpEstimation from "./pages/ControlRoom/BpEstimation";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="patients-data" element={<PatientsData />} />
           <Route path="preparation-setup" element={<PreparationSetup />} />
           <Route path="robot-monitoring" element={<RobotMonitoring />} />
+          <Route path="bp-estimation" element={<BpEstimation />} />
         </Route>
       </Routes>
     </>
