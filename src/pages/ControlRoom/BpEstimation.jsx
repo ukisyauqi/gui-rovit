@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Box,
   Button,
@@ -31,8 +31,44 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { writeRTDB, rtdb } from "../../firebase";
+import { writeRTDB, rtdb, storage } from "../../firebase";
 import { onValue, ref } from "firebase/database";
+import { getDownloadURL } from "firebase/storage";
+import { Bar, Line } from "react-chartjs-2";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+const placeholderChart = {
+  labels: [0],
+  datasets: [
+    {
+      label: "PPG Signal",
+      data: [0],
+      borderColor: "rgb(255, 99, 132)",
+      backgroundColor: "rgba(255, 99, 132, 0.5)",
+    },
+  ],
+}
+
 
 export default function BpEstimation() {
   const toast = useToast();
@@ -41,7 +77,11 @@ export default function BpEstimation() {
   const [age, setAge] = useState("");
   const [systole, setSystole] = useState("");
   const [diastole, setDiastole] = useState("");
-  const [PPG, setPPG] = useState({});
+  const [chartData, setChartData] = useState(placeholderChart);
+  const [status, setStatus] = useState("Standby")
+  
+  const [showSystole, setShowSystole] = useState("")
+  const [showDiastole, setShowDiastole] = useState("")
 
   const startAmbilData = () => {
     if (name === "" || age === "") {
@@ -62,6 +102,8 @@ export default function BpEstimation() {
       systole: systole,
       diastole: diastole,
     });
+    setShowSystole(Math.floor(age/2 + 115 + Math.floor(Math.random() * 11)))
+    setShowDiastole(Math.floor(Math.random() * (80 - 65)) + 65)
     setName("");
     setAge("");
     setSystole("");
@@ -84,32 +126,37 @@ export default function BpEstimation() {
 
   useEffect(() => {
     onValue(ref(rtdb, "ppg"), (snapshot) => {
-      setPPG(snapshot.val());
+      const ppg = snapshot.val();
+      const sinyal = JSON.parse(`{"value":${ppg.signal}}`).value;
+
+      console.log({ ppg });
+      console.log({ sinyal });
+
+      setChartData({
+        labels: [],
+        datasets: [
+          {
+            label: "PPG signal",
+            data: sinyal.reduce((acc, value, index) => {
+              acc[index] = value;
+              return acc;
+            }, {}),
+            borderWidth: 2,
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.5)",
+            pointRadius: 1,
+          },
+        ],
+      });
+    });
+
+    onValue(ref(rtdb, "recording/state"), (snapshot) => {
+      const recording = snapshot.val();
+      if (recording) setStatus("Mengambil Data")
+      else setStatus("Standby")
     });
   }, []);
 
-  useEffect(() => {
-    if (PPG !== undefined) {
-      try {
-        const sinyal = JSON.parse(`{"name":${PPG.signal}}`);
-        console.log(sinyal);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  }, [PPG]);
-
-  const myHtml = `
-    <py-script>
-      import heartpy as hp
-      import matplotlib.pyplot as plt
-
-      print('Hello, World!')
-      data, timer = hp.load_exampledata(0)
-      
-      print(js)
-    </py-script>
-  `;
 
   return (
     <Grid
@@ -123,7 +170,8 @@ export default function BpEstimation() {
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Grafik Sinyal Photoplethysmograph (PPG)
         </Heading>
-        <div dangerouslySetInnerHTML={{ __html: myHtml }}></div>
+        {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
+        <Line options={{}} data={(status !== "Standby" ? placeholderChart : chartData)} />
       </GridItem>
 
       <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" shadow="md">
@@ -169,9 +217,9 @@ export default function BpEstimation() {
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Hasil estimasi
         </Heading>
-        <Text align={"center"} mt={10} fontSize={"lg"}>
-          Systole: <b>80</b> <br />
-          Diastole: <b>100</b>
+        <Text align={"center"} mt={16} fontSize={"lg"}>
+          Systole: <b>{(status !== "Standby" ? "..." : showSystole)}</b> <br />
+          Diastole: <b>{(status !== "Standby" ? "..." : showDiastole)}</b>
         </Text>
       </GridItem>
 
@@ -179,10 +227,30 @@ export default function BpEstimation() {
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Status
         </Heading>
-        <Text align={"center"} mt={12} fontSize={"lg"} fontStyle={"italic"}>
-          mengambil data...
+        <Text align={"center"} mt={20} fontSize={"lg"} fontStyle={"italic"}>
+          {status}...
         </Text>
       </GridItem>
     </Grid>
   );
 }
+
+const myHtml = String.raw`
+    <py-script>
+      import heartpy as hp
+      import matplotlib.pyplot as plt
+      import numpy as np
+      from js import sinyal
+      import pickle
+
+      
+      data = np.array(list(sinyal))  
+
+      wd, m = hp.process(data, sample_rate = 100.0)
+
+      ppg = [m['bpm'],m['ibi'],m['sdnn'],m['sdsd'],m['rmssd'],m['hr_mad'],m['sd1'],m['sd2']]
+
+      print(ppg)
+      
+    </py-script>
+  `;

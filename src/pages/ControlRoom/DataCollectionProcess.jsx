@@ -12,7 +12,7 @@ export default function DataCollectionProcess() {
       {/* PATIENT DATA */}
       <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Center flexDirection="column" h="full">
-          <Box rounded='full' w={48} h={48} bg={`url(${bram})`} bgRepeat="no-repeat" bgSize="cover"></Box>
+          <Box rounded='full' w={48} h={48} bg={`gray`} bgRepeat="no-repeat" bgSize="cover"></Box>
           <Text fontSize="2xl" mt={4}>Bramantya Wilsa</Text>
           <Text mt={4}>
             Age: 25 <br />

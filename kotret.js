@@ -1,14 +1,29 @@
-/**
- * @param {string} s
- * @return {number}
- */
-var romanToInt = function (s) {
-  const romawi = ['I', 'V', 'X', 'L', 'C', 'D', 'M']
-  const value = [1, 5, 10, 50, 100, 500, 1000]
-  c = 0
-  for (let i = 0; i < s.length; i++) {
-    
-  }
-  return c
-};
+// function solution(S) {
+//   // console.log(S)
+//   let V = parseInt(S, 2);
+//   let c = 0
+//   while(V !== 0) {
+//     if (V % 2 === 0) V /= 2
+//     else V -= 1
+//     c++
+//   }
+//   return c
+// }
 
+// console.log(solution("111111"))
+// console.log(solution("10101"))
+// console.log(solution("1000"))
+// console.log(solution("100"))
+// console.log(solution("10"))
+// console.log(solution("1"))
+
+function solution(S){
+  S = parseInt(S).toString()
+  return S.length + countCharacter(S) -1;
+}
+
+function countCharacter(str) {
+  return str.split("1").length - 1
+}
+
+console.log(solution("1010101010"))

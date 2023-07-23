@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase, ref, set } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app)
 export const rtdb = getDatabase(app)
+export const storage = getStorage(app);
 export const writeRTDB = (key, value) => {
   set(ref(rtdb, key), value);
 }

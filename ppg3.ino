@@ -68,12 +68,12 @@ void loop() {
       }
 
       // recording
-      Serial.println("~~~~~ recording ~~~~~~");
+      Serial.println("recording...");
       pm = millis();
       for (i = 0; i < rec_size; i++) {
         delay(10);
         sample = analogRead(PulseSensorPurplePin);
-        Serial.print("rec : ");
+        Serial.print("recording... ");
         Serial.println(sample); 
         Signal.add(sample);
       }
