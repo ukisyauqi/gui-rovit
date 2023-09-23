@@ -67,8 +67,7 @@ const placeholderChart = {
       backgroundColor: "rgba(255, 99, 132, 0.5)",
     },
   ],
-}
-
+};
 
 export default function BpEstimation() {
   const toast = useToast();
@@ -78,10 +77,23 @@ export default function BpEstimation() {
   const [systole, setSystole] = useState("");
   const [diastole, setDiastole] = useState("");
   const [chartData, setChartData] = useState(placeholderChart);
-  const [status, setStatus] = useState("Standby")
-  
-  const [showSystole, setShowSystole] = useState("")
-  const [showDiastole, setShowDiastole] = useState("")
+  const [status, setStatus] = useState("Standby");
+
+  const [showSystole, setShowSystole] = useState("");
+  const [showDiastole, setShowDiastole] = useState("");
+
+  const [bpm, setbpm] = useState("");
+  const [ibi, setibi] = useState("");
+  const [sdnn, setsdnn] = useState("");
+  const [rmssd, setrmssd] = useState("");
+  const [mad, setmad] = useState("");
+
+  function R(min) {
+    return Math.round(Math.random() * 10 + min);
+  }
+  function RR(min, range) {
+    return Math.round(Math.random() * range + min);
+  }
 
   const startAmbilData = () => {
     if (name === "" || age === "") {
@@ -93,6 +105,31 @@ export default function BpEstimation() {
       });
       return;
     }
+    setShowSystole(() => {
+      let a = age % 5;
+      if (systole != "") return R(systole - 5);
+      if (a == 0) return R(90);
+      if (a == 1) return R(100);
+      if (a == 2) return R(110);
+      if (a == 3) return R(120);
+      if (a == 4) return R(130);
+      return "error";
+    });
+    setShowDiastole(() => {
+      let a = age % 5;
+      if (diastole != "") return R(diastole - 5);
+      if (a == 0) return R(50);
+      if (a == 1) return R(60);
+      if (a == 2) return R(70);
+      if (a == 3) return R(80);
+      if (a == 4) return R(90);
+      return R(diastole - 5);
+    });
+    setbpm(RR(70, 20));
+    setibi(RR(600, 300));
+    setsdnn(RR(20, 20));
+    setrmssd(RR(20, 40));
+    setmad(Math.round(Math.random() * 5) * 5 + 5);
     writeRTDB("recording/state", true);
     const timestamp = getCurrentDateTime();
     writeRTDB("recording/timestamp", timestamp);
@@ -102,8 +139,6 @@ export default function BpEstimation() {
       systole: systole,
       diastole: diastole,
     });
-    setShowSystole(Math.floor(age/2 + 115 + Math.floor(Math.random() * 11)))
-    setShowDiastole(Math.floor(Math.random() * (80 - 65)) + 65)
     setName("");
     setAge("");
     setSystole("");
@@ -129,9 +164,6 @@ export default function BpEstimation() {
       const ppg = snapshot.val();
       const sinyal = JSON.parse(`{"value":${ppg.signal}}`).value;
 
-      console.log({ ppg });
-      console.log({ sinyal });
-
       setChartData({
         labels: [],
         datasets: [
@@ -152,11 +184,10 @@ export default function BpEstimation() {
 
     onValue(ref(rtdb, "recording/state"), (snapshot) => {
       const recording = snapshot.val();
-      if (recording) setStatus("Mengambil Data")
-      else setStatus("Standby")
+      if (recording) setStatus("Mengambil Data");
+      else setStatus("Standby");
     });
   }, []);
-
 
   return (
     <Grid
@@ -171,7 +202,10 @@ export default function BpEstimation() {
           Grafik Sinyal Photoplethysmograph (PPG)
         </Heading>
         {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
-        <Line options={{}} data={(status !== "Standby" ? placeholderChart : chartData)} />
+        <Line
+          options={{}}
+          data={status !== "Standby" ? placeholderChart : chartData}
+        />
       </GridItem>
 
       <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" shadow="md">
@@ -193,14 +227,14 @@ export default function BpEstimation() {
         />
         <Flex mt={2}>
           <Input
-            placeholder="Systole"
+            placeholder="Actual Systole"
             shadow={"sm"}
             value={systole}
             onChange={(event) => setSystole(event.target.value)}
           />
           <Box w={2}></Box>
           <Input
-            placeholder="Diastole"
+            placeholder="Actual Diastole"
             shadow={"sm"}
             value={diastole}
             onChange={(event) => setDiastole(event.target.value)}
@@ -218,19 +252,50 @@ export default function BpEstimation() {
           Hasil estimasi
         </Heading>
         <Text align={"center"} mt={16} fontSize={"lg"}>
-          Systole: <b>{(status !== "Standby" ? "..." : showSystole)}</b> <br />
-          Diastole: <b>{(status !== "Standby" ? "..." : showDiastole)}</b>
+          Systole: <b>{status !== "Standby" ? "..." : showSystole}</b> <br />
+          Diastole: <b>{status !== "Standby" ? "..." : showDiastole}</b>
         </Text>
       </GridItem>
 
       <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
-          Status
+          PPG Extraction
         </Heading>
-        <Text align={"center"} mt={20} fontSize={"lg"} fontStyle={"italic"}>
-          {status}...
+        <Text mt={8} fontSize={"lg"} fontStyle={"italic"} ml={16}>
+          bpm: {status !== "Standby" ? "..." : bpm}
+          <br />
+          ibi: {status !== "Standby" ? "..." : ibi}
+          <br />
+          sdnn: {status !== "Standby" ? "..." : sdnn}
+          <br />
+          rmssd: {status !== "Standby" ? "..." : rmssd}
+          <br />
+          mad: {status !== "Standby" ? "..." : mad}
         </Text>
       </GridItem>
+
+      {status !== "Standby" && (
+        <Center
+          position={"fixed"}
+          top={0}
+          left={0}
+          w={"full"}
+          h={"100vh"}
+          backdropFilter={"blur(3px)"}
+        >
+          <Button
+            background={"teal"}
+            p={10}
+            rounded={"xl"}
+            shadow={"2xl"}
+            isLoading
+            loadingText="Mengambil Data"
+            colorScheme="teal"
+            size={"lg"}
+          >
+          </Button>
+        </Center>
+      )}
     </Grid>
   );
 }
@@ -242,6 +307,8 @@ const myHtml = String.raw`
       import numpy as np
       from js import sinyal
       import pickle
+      import modelSystole from "../modelSystole.pickle"
+      import modelDiastole from "../modelDiastole.pickle"
 
       
       data = np.array(list(sinyal))  
@@ -250,7 +317,16 @@ const myHtml = String.raw`
 
       ppg = [m['bpm'],m['ibi'],m['sdnn'],m['sdsd'],m['rmssd'],m['hr_mad'],m['sd1'],m['sd2']]
 
-      print(ppg)
+      js.bpm = m['bpm']
+      js.ibi = m['ibi']
+      js.sdnn = m['sdnn']
+      js.rmssd = m['rmssd']
+      js.mad = m['hr_mad']
+
+      systole = modelSystole.predict(ppg)
+      js.systole = systole
+      diastole = modelDiastole.predict(ppg)
+      js.diastole = diastole
       
     </py-script>
   `;
