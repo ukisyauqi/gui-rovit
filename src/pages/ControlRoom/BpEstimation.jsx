@@ -87,6 +87,8 @@ export default function BpEstimation() {
   const [sdnn, setsdnn] = useState("");
   const [rmssd, setrmssd] = useState("");
   const [mad, setmad] = useState("");
+  const [connected, setConnected] = useState(false)
+  const [connectState, setConnectState] = useState(false)
 
   function R(min) {
     return Math.round(Math.random() * 10 + min);
@@ -187,7 +189,19 @@ export default function BpEstimation() {
       if (recording) setStatus("Mengambil Data");
       else setStatus("Standby");
     });
+
+    onValue(ref(rtdb, "connected"), () => {
+      setConnectState((prev) => !prev);
+    });
   }, []);
+
+  useEffect(() => {
+    let timeoutId;
+    timeoutId = setTimeout(() => {setConnected(false)}, 5000);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [connectState])
 
   return (
     <Grid
@@ -197,7 +211,7 @@ export default function BpEstimation() {
       p={{ sm: 3, md: 5, lg: 6 }}
       minH="100vh"
     >
-      <GridItem colSpan={3} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem colSpan={{base: 1, md:3}} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Grafik Sinyal Photoplethysmograph (PPG)
         </Heading>
@@ -208,10 +222,13 @@ export default function BpEstimation() {
         />
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" shadow="md">
+      <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" mt={{base:5, md: 0}} shadow="md">
+        <Flex justifyContent="space-between">
         <Heading fontSize="xl" fontWeight="semibold" mb={2}>
           Aksi
         </Heading>
+        {/* {connected ? <Text textColor={"gray"}>sensor <i>connected</i></Text> : <Text textColor={"gray"}>sensor <i>disconnected</i></Text>} */}
+        </Flex>
         <Input
           placeholder="Masukan Nama Responden"
           shadow={"sm"}
@@ -247,21 +264,21 @@ export default function BpEstimation() {
         </Flex>
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" mt={{base:5, md: 0}} shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Hasil estimasi
         </Heading>
-        <Text align={"center"} mt={16} fontSize={"lg"}>
+        <Text align={"center"} my={{base:10 ,md:16}} fontSize={"lg"}>
           Systole: <b>{status !== "Standby" ? "..." : showSystole}</b> <br />
           Diastole: <b>{status !== "Standby" ? "..." : showDiastole}</b>
         </Text>
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" my={{base:5, md: 0}} shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           PPG Extraction
         </Heading>
-        <Text mt={8} fontSize={"lg"} fontStyle={"italic"} ml={16}>
+        <Text mt={8} fontSize={"lg"} fontStyle={"italic"} ml={16} mb={{base: 10, md: 0}}>
           bpm: {status !== "Standby" ? "..." : bpm}
           <br />
           ibi: {status !== "Standby" ? "..." : ibi}
