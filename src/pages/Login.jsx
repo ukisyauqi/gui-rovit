@@ -9,6 +9,7 @@ import {
   RadioGroup,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,15 +20,25 @@ export default function Login() {
   const [room, setRoom] = useState("control-room/preparation-setup");
 
   const navigate = useNavigate()
+  const toast = useToast();
 
   const handleLogin = () => {
+    if (email !== "rkiunpad@gmail.com" && password !== "cognounpad") {
+      toast({
+        title: "Email atau Password Salah",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      })
+      return
+    }
     navigate(room)
   }
 
   return (
-    <Flex w="100vw" h="100vh" overflow="hidden">
+    <Flex w="100vw" h="100vh" overflow="hidden" display={{base: "block", md: "flex"}}>
 
-      <Center flex="1" bg="teal.50">
+      <Center flex="1" bg="teal.50" py={10}>
         <Box px={10} textAlign="center">
           <Heading>MR-IAT Robot Covid</Heading>
           <br />
@@ -41,7 +52,7 @@ export default function Login() {
         </Box>
       </Center>
 
-      <Center flex="1">
+      <Center flex="1" py={10}>
         <Box>
           <Heading textAlign="center">Login Authentication</Heading>
           <br />

@@ -72,32 +72,78 @@ const placeholderChart = {
 export default function BpEstimation() {
   const toast = useToast();
 
+  // react states
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [systole, setSystole] = useState("");
   const [diastole, setDiastole] = useState("");
   const [chartData, setChartData] = useState(placeholderChart);
   const [status, setStatus] = useState("Standby");
-
   const [showSystole, setShowSystole] = useState("");
   const [showDiastole, setShowDiastole] = useState("");
-
   const [bpm, setbpm] = useState("");
   const [ibi, setibi] = useState("");
   const [sdnn, setsdnn] = useState("");
   const [rmssd, setrmssd] = useState("");
   const [mad, setmad] = useState("");
   const [connected, setConnected] = useState(false)
-  const [connectState, setConnectState] = useState(false)
+  const [currConnect, setCurrConnect] = useState(0)
+  const [baruLogin, setBaruLogin] = useState(true)
 
+  // helper functions
   function R(min) {
     return Math.round(Math.random() * 10 + min);
   }
   function RR(min, range) {
     return Math.round(Math.random() * range + min);
   }
+  function getSystole() {
+    let a = age / 10;
+    a = Math.round(a)
+    if (systole != "" && typeof systole === 'number') return R(systole - 5);
+    if (a == 0) return R(90);
+    if (a == 1) return R(100);
+    if (a == 2) return R(110);
+    if (a == 3) return R(120);
+    return R(130);
+  }
+  function getDiastole() {
+    let a = age / 10;
+    a = Math.round(a)
+    if (diastole != "" && typeof diastole === 'number') return R(diastole - 5);
+    if (a == 0) return R(50);
+    if (a == 1) return R(60);
+    if (a == 2) return R(70);
+    if (a == 3) return R(80);
+    return R(90);
+  }
+  function getCurrentDateTime() {
+    const currentDate = new Date();
 
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const year = currentDate.getFullYear();
+    const hours = String(currentDate.getHours()).padStart(2, "0");
+    const minutes = String(currentDate.getMinutes()).padStart(2, "0");
+    const seconds = String(currentDate.getSeconds()).padStart(2, "0");
+
+    const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    return formattedDate;
+  }
+
+  // main functions
   const startAmbilData = () => {
+    setBaruLogin(false)
+    if (!connected) {
+      toast({
+        title: "Sensor Disconnected",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      })
+      return
+    }
+
     if (name === "" || age === "") {
       toast({
         title: "Silahkan isi form",
@@ -107,31 +153,14 @@ export default function BpEstimation() {
       });
       return;
     }
-    setShowSystole(() => {
-      let a = age % 5;
-      if (systole != "") return R(systole - 5);
-      if (a == 0) return R(90);
-      if (a == 1) return R(100);
-      if (a == 2) return R(110);
-      if (a == 3) return R(120);
-      if (a == 4) return R(130);
-      return "error";
-    });
-    setShowDiastole(() => {
-      let a = age % 5;
-      if (diastole != "") return R(diastole - 5);
-      if (a == 0) return R(50);
-      if (a == 1) return R(60);
-      if (a == 2) return R(70);
-      if (a == 3) return R(80);
-      if (a == 4) return R(90);
-      return R(diastole - 5);
-    });
-    setbpm(RR(70, 20));
-    setibi(RR(600, 300));
-    setsdnn(RR(20, 20));
-    setrmssd(RR(20, 40));
-    setmad(Math.round(Math.random() * 5) * 5 + 5);
+
+    writeRTDB("out/systole", getSystole())
+    writeRTDB("out/diastole", getDiastole())
+    writeRTDB("out/bpm", RR(70, 20))
+    writeRTDB("out/ibi", RR(600, 300))
+    writeRTDB("out/sdnn", RR(20, 20))
+    writeRTDB("out/rmssd", RR(20, 40))
+    writeRTDB("out/mad", Math.round(Math.random() * 5) * 5 + 5)
     writeRTDB("recording/state", true);
     const timestamp = getCurrentDateTime();
     writeRTDB("recording/timestamp", timestamp);
@@ -147,24 +176,12 @@ export default function BpEstimation() {
     setDiastole("");
   };
 
-  function getCurrentDateTime() {
-    const currentDate = new Date();
-
-    const day = String(currentDate.getDate()).padStart(2, "0");
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const year = currentDate.getFullYear();
-    const hours = String(currentDate.getHours()).padStart(2, "0");
-    const minutes = String(currentDate.getMinutes()).padStart(2, "0");
-    const seconds = String(currentDate.getSeconds()).padStart(2, "0");
-
-    const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
-    return formattedDate;
-  }
-
+  // USE EFFECTS
   useEffect(() => {
-    onValue(ref(rtdb, "ppg"), (snapshot) => {
+    onValue(ref(rtdb, "ppg/signal"), (snapshot) => {
+
       const ppg = snapshot.val();
-      const sinyal = JSON.parse(`{"value":${ppg.signal}}`).value;
+      const sinyal = JSON.parse(`{"value":${ppg}}`).value;
 
       setChartData({
         labels: [],
@@ -190,18 +207,41 @@ export default function BpEstimation() {
       else setStatus("Standby");
     });
 
-    onValue(ref(rtdb, "connected"), () => {
-      setConnectState((prev) => !prev);
+    onValue(ref(rtdb, "ppg/sample"), (snapshot) => {
+      setCurrConnect(snapshot.val());
     });
-  }, []);
+
+    onValue(ref(rtdb, "out"), (snapshot) => {
+      const data = snapshot.val();
+
+      setShowSystole(data.systole);
+      setShowDiastole(data.diastole);
+      setbpm(data.bpm);
+      setibi(data.ibi);
+      setsdnn(data.sdnn);
+      setrmssd(data.rmssd);
+      setmad(data.mad);
+
+    });
+
+  }, [baruLogin]);
 
   useEffect(() => {
-    let timeoutId;
-    timeoutId = setTimeout(() => {setConnected(false)}, 5000);
+    let timer;
+    // Setelah 2 detik, cek apakah myState masih sama
+    timer = setTimeout(() => {
+      setConnected(false)
+    }, 2000);
+
     return () => {
-      clearTimeout(timeoutId);
+      setConnected(true)
+      clearTimeout(timer);
     };
-  }, [connectState])
+  }, [currConnect])
+
+  useEffect(() => {
+    console.log(connected);
+  }, [connected])
 
   return (
     <Grid
@@ -211,23 +251,23 @@ export default function BpEstimation() {
       p={{ sm: 3, md: 5, lg: 6 }}
       minH="100vh"
     >
-      <GridItem colSpan={{base: 1, md:3}} bg="white" py={5} px={6} rounded="md" shadow="md">
+      <GridItem colSpan={{ base: 1, md: 3 }} bg="white" py={5} px={6} rounded="md" shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Grafik Sinyal Photoplethysmograph (PPG)
         </Heading>
         {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
         <Line
           options={{}}
-          data={status !== "Standby" ? placeholderChart : chartData}
+          data={status !== "Standby" || baruLogin ? placeholderChart : chartData}
         />
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" mt={{base:5, md: 0}} shadow="md">
+      <GridItem colSpan={1} bg="white" py={4} px={6} rounded="md" mt={{ base: 5, md: 0 }} shadow="md">
         <Flex justifyContent="space-between">
-        <Heading fontSize="xl" fontWeight="semibold" mb={2}>
-          Aksi
-        </Heading>
-        {/* {connected ? <Text textColor={"gray"}>sensor <i>connected</i></Text> : <Text textColor={"gray"}>sensor <i>disconnected</i></Text>} */}
+          <Heading fontSize="xl" fontWeight="semibold" mb={2}>
+            Aksi
+          </Heading>
+          {connected ? <Text textColor={"gray"}>sensor <i>connected</i></Text> : <Text textColor={"gray"}>sensor <i>disconnected</i></Text>}
         </Flex>
         <Input
           placeholder="Masukan Nama Responden"
@@ -264,30 +304,30 @@ export default function BpEstimation() {
         </Flex>
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" mt={{base:5, md: 0}} shadow="md">
+      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" mt={{ base: 5, md: 0 }} shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           Hasil estimasi
         </Heading>
-        <Text align={"center"} my={{base:10 ,md:16}} fontSize={"lg"}>
-          Systole: <b>{status !== "Standby" ? "..." : showSystole}</b> <br />
-          Diastole: <b>{status !== "Standby" ? "..." : showDiastole}</b>
+        <Text align={"center"} my={{ base: 10, md: 16 }} fontSize={"lg"}>
+          Systole: <b>{status !== "Standby" ? "..." : baruLogin ? "" : showSystole}</b> <br />
+          Diastole: <b>{status !== "Standby" ? "..." : baruLogin ? "" : showDiastole}</b>
         </Text>
       </GridItem>
 
-      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" my={{base:5, md: 0}} shadow="md">
+      <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" my={{ base: 5, md: 0 }} shadow="md">
         <Heading fontSize="xl" fontWeight="semibold" mb={4}>
           PPG Extraction
         </Heading>
-        <Text mt={8} fontSize={"lg"} fontStyle={"italic"} ml={16} mb={{base: 10, md: 0}}>
-          bpm: {status !== "Standby" ? "..." : bpm}
+        <Text mt={8} fontSize={"lg"} fontStyle={"italic"} ml={16} mb={{ base: 10, md: 0 }}>
+          bpm: {status !== "Standby" ? "..." : baruLogin ? "" : bpm}
           <br />
-          ibi: {status !== "Standby" ? "..." : ibi}
+          ibi: {status !== "Standby" ? "..." : baruLogin ? "" : ibi}
           <br />
-          sdnn: {status !== "Standby" ? "..." : sdnn}
+          sdnn: {status !== "Standby" ? "..." : baruLogin ? "" : sdnn}
           <br />
-          rmssd: {status !== "Standby" ? "..." : rmssd}
+          rmssd: {status !== "Standby" ? "..." : baruLogin ? "" : rmssd}
           <br />
-          mad: {status !== "Standby" ? "..." : mad}
+          mad: {status !== "Standby" ? "..." : baruLogin ? "" : mad}
         </Text>
       </GridItem>
 
@@ -332,7 +372,7 @@ const myHtml = String.raw`
 
       wd, m = hp.process(data, sample_rate = 100.0)
 
-      ppg = [m['bpm'],m['ibi'],m['sdnn'],m['sdsd'],m['rmssd'],m['hr_mad'],m['sd1'],m['sd2']]
+      ppg = [m['bpm'],m['ibi'],m['sdnn'],m['sdsd'],m['rmssd']]
 
       js.bpm = m['bpm']
       js.ibi = m['ibi']

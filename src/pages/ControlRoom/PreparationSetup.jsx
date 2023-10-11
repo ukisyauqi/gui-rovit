@@ -42,70 +42,29 @@ export default function PreparationSetup() {
 
   const delay = 2000;
 
-  // const openLower= () => {
-  //   writeRTDB("lower-state", 1)
-  // }
   const openLower = () => {
-    writeRTDB("lower-state", 1); //buka
-    console.log("1");
-    // setTimeout(() => {
-    //   writeRTDB("lower-state", 2) //diem
-    // }, 10000);
-    // setTimeout(() => {
-    //   writeRTDB("lower-state", 3) //tutup
-    // }, 30000);
-    // setTimeout(() => {
-    //   writeRTDB("lower-state", 0) // diem
-    // }, 40000);
+    writeRTDB("laci/bawah", 1);
   };
   const closeLower = () => {
-    writeRTDB("lower-state", 3);
-    console.log("3");
+    writeRTDB("laci/bawah", 2);
   };
-
-  // const openMiddle= () => {
-  //   writeRTDB("middle-state", 1)
-  // }
   const openMiddle = () => {
-    writeRTDB("middle-state", 1); //buka
-    // setTimeout(() => {
-    //   writeRTDB("middle-state", 2) //diem
-    // }, 10000);
-    // setTimeout(() => {
-    //   writeRTDB("middle-state", 3) //tutup
-    // }, 30000);
-    // setTimeout(() => {
-    //   writeRTDB("middle-state", 0) // diem
-    // }, 40000);
+    writeRTDB("laci/tengah", 1);
   };
   const closeMiddle = () => {
-    writeRTDB("middle-state", 3);
+    writeRTDB("laci/tengah", 2);
   };
-
   const openUpper = () => {
-    writeRTDB("upper-state", 1); //buka
-    // setTimeout(() => {
-    //   writeRTDB("upper-state", 2) //diem
-    // }, 10000);
-    // setTimeout(() => {
-    //   writeRTDB("upper-state", 3) //tutup
-    // }, 30000);
-    // setTimeout(() => {
-    //   writeRTDB("upper-state", 0) // diem
-    // }, 40000);
+    writeRTDB("laci/atas", 1);
   };
   const closeUpper = () => {
-    writeRTDB("upper-state", 3);
-    // setTimeout(() => {
-    //   writeRTDB("upper-state", 0)
-    // }, 10000);
+    writeRTDB("laci/atas", 2);
   };
 
   const release = () => {
-    console.log("0");
-    writeRTDB("upper-state", 0);
-    writeRTDB("middle-state", 0);
-    writeRTDB("lower-state", 0);
+    writeRTDB("laci/atas", 0);
+    writeRTDB("laci/tengah", 0);
+    writeRTDB("laci/bawah", 0);
   };
 
   const startAutomation = () => {
