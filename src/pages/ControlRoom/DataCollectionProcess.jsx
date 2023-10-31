@@ -2,7 +2,6 @@
 import { Box, Button, Center, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import bram from "../../assets/bram.png"
-import { connect } from "simple-web-serial";
 
 export default function DataCollectionProcess() {
  

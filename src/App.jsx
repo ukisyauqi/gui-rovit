@@ -24,7 +24,9 @@ function App() {
           <Route path="patients-data" element={<PatientsData />} />
           <Route path="preparation-setup" element={<PreparationSetup />} />
           <Route path="robot-monitoring" element={<RobotMonitoring />} />
-          <Route path="bp-estimation" element={<BpEstimation />} />
+          <Route path="bp-estimation" element={<BpEstimation />}>
+          <Route path="scan" element={<BpEstimation />} />
+          </Route>
         </Route>
       </Routes>
     </>

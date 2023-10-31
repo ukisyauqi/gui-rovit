@@ -38,6 +38,8 @@ unsigned long pm;
 
 int timestamp;
 
+String sensorId = "asdsa";
+
 void setup() {
   Serial.begin(115200);
 
@@ -48,12 +50,12 @@ void setup() {
 
 void loop() {
   if (Firebase.ready()) {
-    Firebase.RTDB.getBool(&fbdo, "recording/state");
+    Firebase.RTDB.getBool(&fbdo, sensorId + "recording/state");
     recording = fbdo.boolData();
 
     int sample;
     if (recording) {
-      Firebase.RTDB.getString(&fbdo, "recording/timestamp");
+      Firebase.RTDB.getString(&fbdo, sensorId + "recording/timestamp");
       String timeStamp = fbdo.stringData();
 
       ppg.clear();
@@ -84,18 +86,18 @@ void loop() {
       ppg.set("signal", str_signal);
       ppg.set("timestamp", timeStamp);
 
-      Firebase.RTDB.setBool(&fbdo, "recording/state", false);
-      Firebase.RTDB.updateNode(&fbdo, "ppg-database/" + timeStamp, &ppg);
-      Firebase.RTDB.set(&fbdo, "ppg", &ppg);
+      Firebase.RTDB.setBool(&fbdo, sensorId + "recording/state", false);
+      Firebase.RTDB.updateNode(&fbdo, sensorId + "ppg-database/" + timeStamp, &ppg);
+      Firebase.RTDB.set(&fbdo, sensorId + "ppg", &ppg);
 
       delay(2000);
     }
     sample = analogRead(PulseSensorPurplePin);
     Serial.println(sample);
-    Firebase.RTDB.setInt(&fbdo, "ppg/sample", sample);
+    Firebase.RTDB.setInt(&fbdo, sensorId + "ppg/sample", sample);
   }
 
-  delay(100);
+  delay(500);
 }
 
 void setupWifiAndFirebase() {

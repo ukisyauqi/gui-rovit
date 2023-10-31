@@ -1,24 +1,16 @@
-import { Box } from "@chakra-ui/react";
-import React from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function ManualNavigation() {
-  const myHtml = `
-    
-    <py-script>
-      coba = js.document.getElementById("coba")
+  const nilai = useRef(10)
 
-      for i in range(100):
-        coba.innerHTML = i
+  useEffect(() => {
+    console.log(nilai)
+  
+    return () => {
+      
+    }
+  }, [])
+  
 
-    </py-script>
-  `;
-
-  return (
-    <>
-      <Box position={'relative'}>
-        <div dangerouslySetInnerHTML={{ __html: myHtml }}></div>
-      </Box>
-      <div id="coba">10</div>
-    </>
-  );
+  return <div></div>;
 }

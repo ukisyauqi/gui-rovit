@@ -1,7 +1,6 @@
 import { Center, Box, Button, Flex, Grid, GridItem, Heading, Input, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, OrderedList, Spacer, Text, useDisclosure } from "@chakra-ui/react";
 import { useLayoutEffect } from "react";
 import { useEffect, useState, useRef } from "react";
-import { connect } from "simple-web-serial"
 import Webcam from "react-webcam";
 import { collection, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase"
