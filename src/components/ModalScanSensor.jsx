@@ -18,9 +18,10 @@ export default function ModalScanSensor(props) {
 
   const onNewScanResult = (decodedText, decodedResult) => {
     // validate sensor id
-    const validIds = ["R3K7Q", "P9A2G", "L5W1D", "M8F4H", "T2N6E"];
+    const validIds = ["R3K7Q", "P9A2G", "L5W1D", "M8F4H", "T2N6E", "M0S4F"];
     if (validIds.includes(decodedText)) {
       props.setSensorId(decodedText);
+      sessionStorage.setItem("sensorId", decodedText)
     } else {
       toast({
         description: "Sensor Invalid",

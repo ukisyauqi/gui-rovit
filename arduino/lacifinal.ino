@@ -4,8 +4,8 @@
 #include <addons/TokenHelper.h>
 #include <addons/RTDBHelper.h>
 
-#define WIFI_SSID "angga"
-#define WIFI_PASSWORD "12345678"
+#define WIFI_SSID "rovit"
+#define WIFI_PASSWORD "cognounpad"
 
 #define API_KEY "AIzaSyB2njmJC2J5rTU9ecqkegcdfrXK2c1KVfM"
 #define DATABASE_URL "https://gui-rovit-default-rtdb.asia-southeast1.firebasedatabase.app/"
@@ -28,17 +28,24 @@ int laciAtas;
 int laciTengah;
 int laciBawah;
 
+int connect = true;
+
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
-  pinMode(A_ENA, OUTPUT);
-  pinMode(A_IN1, OUTPUT);
-	pinMode(A_IN2, OUTPUT);
+  // atas
+  pinMode(A_ENA, OUTPUT); // 13
+  pinMode(A_IN1, OUTPUT); // 12
+	pinMode(A_IN2, OUTPUT); // 14
+
+  // tengah
   pinMode(A_ENB, OUTPUT);
   pinMode(A_IN3, OUTPUT);
 	pinMode(A_IN4, OUTPUT);
+
+  // bawah
   pinMode(B_ENA, OUTPUT);
   pinMode(B_IN1, OUTPUT);
 	pinMode(B_IN2, OUTPUT);
@@ -64,7 +71,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   if (Firebase.ready()) {
-  Serial.print("... ");
+    Serial.print("... ");
     Firebase.RTDB.getJSON(&fbdo, "laci");
     FirebaseJson &json = fbdo.jsonObject();
 
@@ -79,10 +86,6 @@ void loop() {
     FirebaseJsonData result3;
     json.get(result3,"bawah");
     laciBawah = result3.to<int>();
-
-    // laciAtas = json.get(result,"atas");
-    // laciTengah = json.get(result,"tengah");
-    // laciBawah = json.get(result,"bawah");
     
     if (laciAtas == 0) diam(A_IN1, A_IN2);
     if (laciAtas == 1) buka(A_IN1, A_IN2);
@@ -95,6 +98,10 @@ void loop() {
     if (laciBawah == 0) diam(B_IN1, B_IN2);
     if (laciBawah == 1) buka(B_IN1, B_IN2);
     if (laciBawah == 2) tutup(B_IN1, B_IN2);
+
+    Firebase.RTDB.setBool(&fbdo, "laci/connect", connect);
+    if (connect) connect = false;
+    else connect = true;
   }
   Serial.println("  ...");
 }

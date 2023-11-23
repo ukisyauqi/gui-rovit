@@ -20,5 +20,6 @@ export const rtdb = getDatabase(app)
 export const storage = getStorage(app);
 export const writeRTDB = (key, value) => {
   set(ref(rtdb, key), value);
-  console.log({key, value});
+  console.log({key})
+  console.log({value})
 }

@@ -42,29 +42,27 @@ export default function PreparationSetup() {
 
   const delay = 2000;
 
-  const openLower = () => {
-    writeRTDB("laci/bawah", 1);
-  };
-  const closeLower = () => {
-    writeRTDB("laci/bawah", 2);
-  };
-  const openMiddle = () => {
-    writeRTDB("laci/tengah", 1);
-  };
-  const closeMiddle = () => {
-    writeRTDB("laci/tengah", 2);
-  };
   const openUpper = () => {
-    writeRTDB("laci/atas", 1);
+    writeOnCharacteristic(1);
   };
   const closeUpper = () => {
-    writeRTDB("laci/atas", 2);
+    writeOnCharacteristic(2);
+  };
+  const openMiddle = () => {
+    writeOnCharacteristic(3);
+  };
+  const closeMiddle = () => {
+    writeOnCharacteristic(4);
+  };
+  const openLower = () => {
+    writeOnCharacteristic(5);
+  };
+  const closeLower = () => {
+    writeOnCharacteristic(6);
   };
 
   const release = () => {
-    writeRTDB("laci/atas", 0);
-    writeRTDB("laci/tengah", 0);
-    writeRTDB("laci/bawah", 0);
+    writeOnCharacteristic(0);
   };
 
   const startAutomation = () => {
@@ -73,7 +71,101 @@ export default function PreparationSetup() {
       writeRTDB("start-upper", true);
     }, 3000);
   };
- 
+
+  const deviceName = "ESP32";
+  const bleService = "19b10000-e8f2-537e-4f6c-d104768a1214";
+  const ledCharacteristic = "19b10002-e8f2-537e-4f6c-d104768a1214";
+  const sensorCharacteristic = "19b10001-e8f2-537e-4f6c-d104768a1214";
+
+  var bleServer;
+  var bleServiceFound;
+  var sensorCharacteristicFound;
+
+  function handleCharacteristicChange(event) {
+    const newValueReceived = new TextDecoder().decode(event.target.value);
+    console.log("Characteristic value changed: ", newValueReceived);
+  }
+
+  function writeOnCharacteristic(value) {
+    if (bleServer && bleServer.connected) {
+      bleServiceFound
+        .getCharacteristic(ledCharacteristic)
+        .then((characteristic) => {
+          console.log("Found the LED characteristic: ", characteristic.uuid);
+          const data = new Uint8Array([value]);
+          return characteristic.writeValue(data);
+        })
+        .then(() => {
+          console.log("Value written to LEDcharacteristic:", value);
+        })
+        .catch((error) => {
+          console.error("Error writing to the LED characteristic: ", error);
+          writeOnCharacteristic(value);
+        });
+    } else {
+      console.error(
+        "Bluetooth is not connected. Cannot write to characteristic."
+      );
+      window.alert(
+        "Bluetooth is not connected. Cannot write to characteristic. \n Connect to BLE first!"
+      );
+      connectToDevice();
+    }
+  }
+
+  function onDisconnected(event) {
+    connectToDevice();
+  }
+
+  function connectToDevice() {
+    console.log("Initializing Bluetooth...");
+    navigator.bluetooth
+      .requestDevice({
+        filters: [{ name: deviceName }],
+        optionalServices: [bleService],
+      })
+      .then((device) => {
+        console.log("Device Selected:", device.name);
+        device.addEventListener("gattservicedisconnected", onDisconnected);
+        return device.gatt.connect();
+      })
+      .then((gattServer) => {
+        bleServer = gattServer;
+        console.log("Connected to GATT Server");
+        return bleServer.getPrimaryService(bleService);
+      })
+      .then((service) => {
+        bleServiceFound = service;
+        console.log("Service discovered:", service.uuid);
+        return service.getCharacteristic(sensorCharacteristic);
+      })
+      .then((characteristic) => {
+        console.log("Characteristic discovered:", characteristic.uuid);
+        sensorCharacteristicFound = characteristic;
+        characteristic.addEventListener(
+          "characteristicvaluechanged",
+          handleCharacteristicChange
+        );
+        characteristic.startNotifications();
+        console.log("Notifications Started.");
+        return characteristic.readValue();
+      })
+      .then((value) => {
+        console.log("Read value: ", value);
+        const decodedValue = new TextDecoder().decode(value);
+        console.log("Decoded value: ", decodedValue);
+      })
+      .catch((error) => {
+        console.log("Error: ", error);
+      });
+  }
+
+  useEffect(() => {
+    connectToDevice();
+
+    return () => {};
+  }, []);
+
   return (
     <Grid
       templateRows={{ base: "", md: "1fr auto" }}
@@ -120,22 +212,20 @@ export default function PreparationSetup() {
               </MenuButton>
               <MenuList p={0}>
                 {roomList.map((room, i) => (
-                  <>
-                    <MenuItem p={0} key={i}>
-                      <Button
-                        onClick={() =>
-                          setSelectedRooms((prev) => [...prev, roomList[i]])
-                        }
-                        variant="unstyled"
-                        w="100%"
-                        justifyContent="flex-start"
-                      >
-                        <Text textAlign="left" px={4}>
-                          Room {room}
-                        </Text>
-                      </Button>
-                    </MenuItem>
-                  </>
+                  <MenuItem p={0} key={i}>
+                    <Button
+                      onClick={() =>
+                        setSelectedRooms((prev) => [...prev, roomList[i]])
+                      }
+                      variant="unstyled"
+                      w="100%"
+                      justifyContent="flex-start"
+                    >
+                      <Text textAlign="left" px={4}>
+                        Room {room}
+                      </Text>
+                    </Button>
+                  </MenuItem>
                 ))}
               </MenuList>
             </Menu>
