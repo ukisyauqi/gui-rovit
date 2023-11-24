@@ -29,12 +29,6 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
-int i = 0;
-
-int sample;
-
-FirebaseJsonArray arr;
-
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 float suhu;
@@ -48,43 +42,16 @@ void setup() {
   while (!mlx.begin(MLX90614_I2C_ADDR)) {
     Serial.println("Could not find a valid MLX90614 sensor, check wiring!");
   }
+  Serial.println("sistem ready");
 }
 
 void loop() {
   if (Firebase.ready()) {
-    Firebase.RTDB.getBool(&fbdo, "P9A2G/isRecording");
-
-    if (fbdo.boolData()) {
-      arr.clear();
-      suhu = 0;
-
-      Serial.println("recording...");
-      for (i = 0; i < 1300; i++) {
-        delay(10);
-        sample = analogRead(15);
-        Serial.println(sample);
-        arr.add(sample);
-      }
-
-      suhu = mlx.readObjectTempC();
-
-      Firebase.RTDB.set(&fbdo, "P9A2G/isRecording", false);
-      Firebase.RTDB.set(&fbdo, "P9A2G/signal", &arr);
-      Firebase.RTDB.set(&fbdo, "P9A2G/suhu", suhu);
-    }
-    sample = analogRead(15);
     suhu = mlx.readObjectTempC();
-    Serial.println(sample);
+    Serial.println(suhu);
     Firebase.RTDB.set(&fbdo, "P9A2G/suhu", suhu);
-    if (i != 0) {
-      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
-      i = 0;
-    } else {
-      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
-      i = 1;
-    }
   }
-  delay(500);
+  delay(200);
 }
 
 void setupWifiAndFirebase() {

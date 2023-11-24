@@ -1,4 +1,5 @@
-// BIRO IJO KUNING : kiri tengah kanan : ground vcc data32
+// 32
+// SDA SCL | 21 22
 #if defined(ESP32)
 #include <WiFi.h>
 #include <FirebaseESP32.h>
@@ -16,23 +17,18 @@
 #define API_KEY "AIzaSyB2njmJC2J5rTU9ecqkegcdfrXK2c1KVfM"
 #define DATABASE_URL "https://gui-rovit-default-rtdb.asia-southeast1.firebasedatabase.app/"
 
+#define USER_EMAIL "rovit@gmail.com"
+#define USER_PASSWORD "Unpad57"
+
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
 int i = 0;
 
-FirebaseJsonArray Signal;
-FirebaseJson ppg;
-
-unsigned long pm;
-
-int timestamp;
 int sample;
 
-String timeStamp;
-
-String str_signal;
+FirebaseJsonArray arr;
 
 void setup() {
   Serial.begin(115200);
@@ -41,50 +37,32 @@ void setup() {
 
 void loop() {
   if (Firebase.ready()) {
-    Firebase.RTDB.getBool(&fbdo, "L5W1D/recording/state");
-    
+    Firebase.RTDB.getBool(&fbdo, "P9A2G/isRecording");
+
     if (fbdo.boolData()) {
-      Firebase.RTDB.getString(&fbdo, "L5W1D/recording/timestamp");
-      timeStamp = fbdo.stringData();
+      arr.clear();
 
-      ppg.clear();
-      Signal.clear();
-
-      // preparation
-      for (i = 0; i < 300; i++) {
-        sample = analogRead(32);
-        Serial.println(sample);
-        delay(10);
-      }
-
-      // recording
       Serial.println("recording...");
-      pm = millis();
-      for (i = 0; i < 1000; i++) {
+      for (i = 0; i < 1300; i++) {
         delay(10);
         sample = analogRead(32);
-        Serial.print("recording... ");
         Serial.println(sample);
-        Signal.add(sample);
+        arr.add(sample);
       }
-      ppg.set("elapsed-time", millis() - pm);
 
-      Signal.toString(str_signal);
-
-      ppg.set("signal", str_signal);
-      ppg.set("timestamp", timeStamp);
-
-      Firebase.RTDB.setBool(&fbdo, "L5W1D/recording/state", false);
-      Firebase.RTDB.set(&fbdo, "L5W1D/ppg", &ppg);
-
-      delay(2000);
+      Firebase.RTDB.set(&fbdo, "P9A2G/isRecording", false);
+      Firebase.RTDB.set(&fbdo, "P9A2G/signal", &arr);
     }
-    sample = analogRead(32);
-    Serial.println(sample);
-    Firebase.RTDB.setInt(&fbdo, "L5W1D/sample", sample);
+    Serial.println(analogRead(32));
+    if (i != 0) {
+      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
+      i = 0;
+    } else {
+      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
+      i = 1;
+    }
   }
-
-  delay(500);
+  delay(200);
 }
 
 void setupWifiAndFirebase() {
@@ -103,6 +81,9 @@ void setupWifiAndFirebase() {
 
   config.api_key = API_KEY;
   config.database_url = DATABASE_URL;
+
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
 
   Firebase.reconnectWiFi(true);
 
