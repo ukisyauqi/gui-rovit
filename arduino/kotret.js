@@ -1,30 +1,22 @@
-/**
- * TODO:
- * Buatlah variabel greatAuthors yang merupakan array
- * berdasarkan hasil filter() dan map() dari books:
- *   - Gunakan fungsi filter untuk mengembalikan nilai item books
- *     yang hanya memiliki nilai sales lebih dari 1000000.
- *   - Gunakan fungsi map pada books yang sudah ter-filter,
- *     untuk mengembalikan nilai string dengan format:
- *     - `${author} adalah penulis buku ${title} yang sangat hebat!`
- *
- * Catatan: Jangan ubah nilai atau struktur dari books
- */
+function movingAverage(numbers, windowSize) {
+  if (numbers.length < windowSize || windowSize <= 0) {
+      throw new Error("Invalid window size or array length");
+  }
 
-const books = [
-  { title: 'The Da Vinci Code', author: 'Dan Brown', sales: 5094805 },
-  { title: 'The Ghost', author: 'Robert Harris', sales: 807311 },
-  { title: 'White Teeth', author: 'Zadie Smith', sales: 815586 },
-  { title: 'Fifty Shades of Grey', author: 'E. L. James', sales: 3758936 },
-  { title: 'Jamie\'s Italy', author: 'Jamie Oliver', sales: 906968 },
-  { title: 'I Can Make You Thin', author: 'Paul McKenna', sales: 905086 },
-  { title: 'Harry Potter and the Deathly Hallows', author: 'J.K Rowling', sales: 4475152 },
-];
+  const result = [];
 
-// Tulis kode di bawah ini
-const greateAuthors = books.filter((book) => book.sales > 1000000).map((book) => `${book.author} adalah penulis buku ${book.title} yang sangat hebat!`)
-const greatAuthors = books
-  .filter(book => book.sales > 1000000) // Filter berdasarkan sales > 1000000
-  .map(book => `${book.author} adalah penulis buku ${book.title} yang sangat hebat!`); // Format string
+  for (let i = 0; i <= numbers.length - windowSize; i++) {
+      const window = numbers.slice(i, i + windowSize);
+      const average = window.reduce((sum, num) => sum + num, 0) / windowSize;
+      result.push(average);
+  }
 
-console.log(greatAuthors);
+  return result;
+}
+
+// Example usage:
+const data = [1, 2, 3, NaN, 5, 6, 7, 8, 9, 10];
+const windowSize = 3;
+const result = movingAverage(data, windowSize);
+
+console.log(result); // Output: [2, 3, 4, 5, 6, 7, 8, 9]

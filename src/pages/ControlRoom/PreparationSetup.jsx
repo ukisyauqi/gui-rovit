@@ -141,7 +141,7 @@ export default function PreparationSetup() {
       })
       .then((characteristic) => {
         console.log("Characteristic discovered:", characteristic.uuid);
-        sensorCharacteristicFound = characteristic;
+      sensorCharacteristicFound = characteristic;
         characteristic.addEventListener(
           "characteristicvaluechanged",
           handleCharacteristicChange

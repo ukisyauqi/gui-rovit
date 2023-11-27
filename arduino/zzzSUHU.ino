@@ -49,7 +49,7 @@ void loop() {
   if (Firebase.ready()) {
     suhu = mlx.readObjectTempC();
     Serial.println(suhu);
-    Firebase.RTDB.set(&fbdo, "P9A2G/suhu", suhu);
+    Firebase.RTDB.set(&fbdo, "L5W1D/suhu", suhu);
   }
   delay(200);
 }

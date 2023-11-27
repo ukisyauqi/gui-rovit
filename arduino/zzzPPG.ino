@@ -37,7 +37,7 @@ void setup() {
 
 void loop() {
   if (Firebase.ready()) {
-    Firebase.RTDB.getBool(&fbdo, "P9A2G/isRecording");
+    Firebase.RTDB.getBool(&fbdo, "L5W1D/isRecording");
 
     if (fbdo.boolData()) {
       arr.clear();
@@ -50,15 +50,15 @@ void loop() {
         arr.add(sample);
       }
 
-      Firebase.RTDB.set(&fbdo, "P9A2G/isRecording", false);
-      Firebase.RTDB.set(&fbdo, "P9A2G/signal", &arr);
+      Firebase.RTDB.set(&fbdo, "L5W1D/isRecording", false);
+      Firebase.RTDB.set(&fbdo, "L5W1D/signal", &arr);
     }
     Serial.println(analogRead(32));
     if (i != 0) {
-      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
+      Firebase.RTDB.set(&fbdo, "L5W1D/sample", i);
       i = 0;
     } else {
-      Firebase.RTDB.set(&fbdo, "P9A2G/sample", i);
+      Firebase.RTDB.set(&fbdo, "L5W1D/sample", i);
       i = 1;
     }
   }
