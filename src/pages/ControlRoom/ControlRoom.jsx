@@ -68,7 +68,7 @@ const SidebarContent = () => {
         <Divider pt={5} borderColor="gray.300" />
       </Box>
 
-      <Box>
+      <Box bg={"white"} h={"full"}>
 
         {/* NAVIGATION LINK */}
         {/* ROBOT NAVIGATION */}

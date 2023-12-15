@@ -10,7 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import Html5QrcodePlugin from "./Html5QrcodePlugin";
+import Html5QrcodePlugin from "../src/components/Html5QrcodePlugin";
 import { useEffect } from "react";
 
 export default function ModalScanSensor(props) {

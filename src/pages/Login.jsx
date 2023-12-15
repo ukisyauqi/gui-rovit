@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [room, setRoom] = useState("control-room/preparation-setup");
+  const [room, setRoom] = useState("control-room/bp-estimation");
 
   const navigate = useNavigate()
   const toast = useToast();

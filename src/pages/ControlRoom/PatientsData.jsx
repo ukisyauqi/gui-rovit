@@ -53,11 +53,12 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { TbActivityHeartbeat } from "react-icons/tb ";
 import { AiOutlineSearch } from "react-icons/ai";
 import { CSVLink, CSVDownload } from "react-csv";
+import { Line } from "react-chartjs-2";
+import Item from "../../components/Item";
 
 export default function PatientsData() {
   const [filteredData, setFilteredData] = useState([]);
   const data = useRef([]);
-  // const { isOpen, onOpen, onClose } = useDisclosure()
 
   const search = (e) => {
     e.preventDefault();
@@ -77,23 +78,26 @@ export default function PatientsData() {
   const headers = [
     { label: "name", key: "nama" },
     { label: "age", key: "umur" },
-    { label: "actual_systole", key: "systole" },
-    { label: "actual_diastole", key: "diastole" },
-    { label: "estimated_systole", key: "inputSystole" },
-    { label: "estimated_diastole", key: "inputDiastole" },
+    { label: "weight", key: "weight" },
+    { label: "temperature", key: "temperature" },
+    { label: "actual_systole", key: "inputSystole" },
+    { label: "actual_diastole", key: "inputDiastole" },
+    { label: "estimated_systole", key: "systole" },
+    { label: "estimated_diastole", key: "diastole" },
     { label: "bpm", key: "bpm" },
     { label: "ibi", key: "ibi" },
     { label: "sdnn", key: "sdnn" },
     { label: "rmssd", key: "rmssd" },
-    { label: "mad", key: "mad" },
-    { label: "sensorID", key: "sensorId" },
-    { label: "ppg", key: "ppg" },
+    { label: "hr_mad", key: "mad" },
+    { label: "ppg", key: "sinyal" },
     { label: "timestamp", key: "timestamp" },
   ];
   useEffect(() => {
     const unsub = onValue(ref(rtdb, "data"), (snapshot) => {
       data.current = Object.entries(snapshot.val()).reverse();
       setFilteredData(data.current);
+
+      console.log(data.current);
     });
 
     return () => {
@@ -107,6 +111,7 @@ export default function PatientsData() {
       gap={{ sm: 3, md: 5, lg: 6 }}
       p={{ sm: 3, md: 5, lg: 6 }}
       h={{ lg: "100vh" }}
+      overflowX={"scroll"}
     >
       {/* PATIENT DATA */}
       <GridItem colSpan={1} bg="white" py={5} px={6} rounded="md" shadow="md">
@@ -150,6 +155,8 @@ export default function PatientsData() {
                 <Tr>
                   <Th textAlign="center">Nama</Th>
                   <Th textAlign="center">Umur</Th>
+                  <Th textAlign="center">Berat Badan</Th>
+                  <Th textAlign="center">Suhu</Th>
                   <Th textAlign="center">Actual SYS/DIA</Th>
                   <Th textAlign="center">Estimated SYS/DIA</Th>
                   <Th textAlign="center">BPM</Th>
@@ -161,65 +168,7 @@ export default function PatientsData() {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredData.map(([key, value]) => (
-                  <Tr key={key}>
-                    <Td textAlign="center">{value.nama ?? " - "}</Td>
-                    <Td textAlign="center">{value.umur ?? " - "}</Td>
-                    <Td textAlign="center">
-                      {value.inputSystole ?? " - "}/
-                      {value.inputDiastole ?? " - "}
-                    </Td>
-                    <Td textAlign="center">
-                      {value.systole ?? " - "}/{value.diastole ?? " - "}
-                    </Td>
-                    <Td textAlign="center">{value.bpm ?? " - "}</Td>
-                    <Td textAlign="center">{value.ibi ?? " - "}</Td>
-                    <Td textAlign="center">{value.sdnn ?? " - "}</Td>
-                    <Td textAlign="center">{value.rmssd ?? " - "}</Td>
-                    <Td textAlign="center">{value.mad ?? " - "}</Td>
-
-                    <Td>
-                      <Flex alignItems="center">
-                        <Text>{key ?? " - "}</Text>
-                        <Spacer />
-                        <Popover>
-                          <PopoverTrigger>
-                            <Button
-                              variant="ghost"
-                              rounded="full"
-                              size="sm"
-                              my="-1"
-                            >
-                              ⋮
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent mr={6} w="fit-content">
-                            <PopoverBody>
-                              <Button
-                                size="sm"
-                                colorScheme="red"
-                                variant="ghost"
-                                onClick={() => writeRTDB("data/" + key, null)}
-                              >
-                                <RiDeleteBin6Line />
-                                &nbsp; Delete Data
-                              </Button>
-                              <br />
-                              <Button
-                                size="sm"
-                                colorScheme="teal"
-                                variant="ghost"
-                              >
-                                <TbActivityHeartbeat />
-                                &nbsp; See PPG Signal
-                              </Button>
-                            </PopoverBody>
-                          </PopoverContent>
-                        </Popover>
-                      </Flex>
-                    </Td>
-                  </Tr>
-                ))}
+                {filteredData.map(([key, value]) => <Item key={key} timestamp={key} value={value}/>)}
               </Tbody>
             </Table>
           </TableContainer>

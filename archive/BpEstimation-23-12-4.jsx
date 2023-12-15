@@ -34,7 +34,7 @@ import { useEffect, useState, useRef } from "react";
 import { writeRTDB, rtdb, storage } from "../../firebase";
 import { onValue, ref } from "firebase/database";
 import { getDownloadURL } from "firebase/storage";
-import { Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 
 import {
   Chart as ChartJS,
@@ -46,7 +46,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import ModalScanSensor from "../../../archive/ModalScanSensor";
+import ModalScanSensor from "../../components/ModalScanSensor";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSpeechSynthesis } from "react-speech-kit";
 
@@ -74,16 +74,21 @@ const placeholderChart = {
 
 export default function BpEstimation() {
   const toast = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { speak, voices } = useSpeechSynthesis();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // react states
   const [inputName, setInputName] = useState("");
   const [inputAge, setInputAge] = useState("");
-  const [inputWeight, setInputWeight] = useState("");
-  const [inputTemperature, setInputTemperature] = useState("");
   const [inputSystole, setInputSystole] = useState("");
   const [inputDiastole, setInputDiastole] = useState("");
   const [chartData, setChartData] = useState(placeholderChart);
+  const [connected, setConnected] = useState(false);
+  const [sample, setSample] = useState(0);
+  const [sensorId, setSensorId] = useState("L5W1D");
+  const [isAmbilData, setIsAmbilData] = useState(false);
   const [result, setResult] = useState({
     systole: "",
     diastole: "",
@@ -93,14 +98,15 @@ export default function BpEstimation() {
     rmssd: "",
     mad: "",
   });
+  const timestamp = useRef(null);
   const btnRefEstimateBpStart = useRef(null);
   const isRecording = useRef(false);
   const [suhu, setSuhu] = useState(0);
-  const signal = useRef(Array(3000).fill(0));
-  const [isSensorConnected, setIsSensorConnected] = useState(false);
+  const signal = useRef([]);
+  const signalChunk = useRef([]);
 
   // helper functions
-  function getTimeStamp() {
+  function getCurrentDateTime() {
     const currentDate = new Date();
 
     const day = String(currentDate.getDate()).padStart(2, "0");
@@ -116,34 +122,33 @@ export default function BpEstimation() {
 
   // main functions
   const startAmbilData = () => {
-    // window.sinyal = signal.current.map((el) => {
-    //   const res = Number(el);
-    //   if (isNaN(res)) return 1500;
-    //   return res;
-    // });
-    // btnRefEstimateBpStart.current.click();
-    writeRTDB("data/" + getTimeStamp(), {
-      nama: inputName,
-      umur: inputAge,
-      weight: inputWeight,
-      temperature: inputTemperature,
-      inputSystole: inputSystole,
-      inputDiastole: inputDiastole,
-      sinyal: signal.current,
-      systole: 0,
-      diastole: 0,
-      bpm: 0,
-      ibi: 0,
-      sdnn: 0,
-      rmssd: 0,
-      mad: 0,
+    window.sinyal = signal.current.map((el) => {
+      const res = Number(el);
+      if (isNaN(res)) return 1500;
+      return res;
     });
-    toast({
-      title: "PPG Recorded",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
+    console.log(window.sinyal);
+    btnRefEstimateBpStart.current.click();
+    // if (!connected) {
+    //   toast({
+    //     title: "Sensor Disconnected",
+    //     status: "error",
+    //     duration: 2000,
+    //     isClosable: true,
+    //   });
+    //   return;
+    // }
+    // if (inputName === "" || inputAge === "") {
+    //   toast({
+    //     title: "Silahkan isi form",
+    //     status: "error",
+    //     duration: 2000,
+    //     isClosable: true,
+    //   });
+    //   return;
+    // }
+    // writeRTDB(sensorId + "/isRecording", true);
+    // timestamp.current = getCurrentDateTime();
   };
 
   const estimateBPFinish = () => {
@@ -151,24 +156,19 @@ export default function BpEstimation() {
     const estimatedDiastole = document.getElementById("diastole").innerHTML;
     const ppgFeature = JSON.parse(document.getElementById("ppg").innerHTML);
 
-    setResult({
-      systole: parseFloat(estimatedSystole).toFixed(2),
-      diastole: parseFloat(estimatedDiastole).toFixed(2),
-      bpm: Math.round(ppgFeature[0]),
-      ibi: Math.round(ppgFeature[1]),
-      sdnn: Math.round(ppgFeature[2]),
-      rmssd: Math.round(ppgFeature[3]),
-      mad: Math.round(ppgFeature[4]),
-    });
-
-    writeRTDB("data/" + getTimeStamp(), {
+    writeRTDB("data/" + timestamp.current, {
       nama: inputName,
       umur: inputAge,
-      weight: inputWeight,
-      temperature: inputTemperature,
       inputSystole: inputSystole,
       inputDiastole: inputDiastole,
+      sensorId: sensorId,
       sinyal: window.sinyal,
+      estimatedSystole: estimatedSystole,
+      estimatedDiastole: estimatedDiastole,
+      ppgFeature: ppgFeature,
+    });
+
+    setResult({
       systole: parseFloat(estimatedSystole).toFixed(2),
       diastole: parseFloat(estimatedDiastole).toFixed(2),
       bpm: Math.round(ppgFeature[0]),
@@ -195,10 +195,65 @@ export default function BpEstimation() {
 
   // USE EFFECTS
   useEffect(() => {
+    if (sensorId === "") return;
+
     const unsubscribes = [];
+    unsubscribes.push(
+      onValue(ref(rtdb, sensorId + "/isRecording"), (snapshot) => {
+        if (snapshot.val()) {
+          setIsAmbilData(true);
+        } else {
+          if (isAmbilData) {
+            setIsAmbilData(false);
+          }
+        }
+      })
+    );
+
+    // unsubscribes
+    //   .push
+    // onValue(ref(rtdb, sensorId + "/signal"), (snapshot) => {
+    //   // we get sinyal at first mount
+    //   // and if sinyal baru dari sensor
+    //   let sinyal = snapshot.val();
+    //   if (typeof sinyal === "string") {
+    //     sinyal = JSON.parse(`{"value":${snapshot.val()}}`).value;
+    //   }
+    //   window.sinyal = sinyal;
+    //   if (sinyal) {
+    //     setChartData({
+    //       labels: [],
+    //       datasets: [
+    //         {
+    //           label: "PPG signal",
+    // data: sinyal.reduce((acc, value, index) => {
+    //   acc[index] = value;
+    //   return acc;
+    // }, {}),
+    //           borderWidth: 2,
+    //           borderColor: "rgb(255, 99, 132)",
+    //           backgroundColor: "rgba(255, 99, 132, 0.5)",
+    //           pointRadius: 1,
+    //         },
+    //       ],
+    //     });
+    //     if (timestamp.current && !isAmbilData) {
+    //       console.log("estimate BP Start");
+    //       btnRefEstimateBpStart.current.click();
+    //     }
+    //   }
+    // })
+    // ();
 
     unsubscribes.push(
-      onValue(ref(rtdb, "L5W1D/suhu"), (snapshot) => {
+      onValue(ref(rtdb, sensorId + "/sample"), (snapshot) => {
+        const data = snapshot.val();
+        setSample(data);
+      })
+    );
+
+    unsubscribes.push(
+      onValue(ref(rtdb, sensorId + "/suhu"), (snapshot) => {
         const data = snapshot.val();
         setSuhu(data.toFixed(2));
       })
@@ -207,27 +262,27 @@ export default function BpEstimation() {
     return () => {
       unsubscribes.map((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [sensorId, isAmbilData]);
 
   const deviceName = "ESP32";
   const bleService = "19b10000-e8f2-537e-4f6c-d104768a1215";
+  const ledCharacteristic = "19b10002-e8f2-537e-4f6c-d104768a1215";
   const sensorCharacteristic = "19b10001-e8f2-537e-4f6c-d104768a1215";
 
   var bleServer;
   var bleServiceFound;
   var sensorCharacteristicFound;
 
-  let i = 0;
-
   function handleCharacteristicChange(event) {
     const newValueReceived = new TextDecoder().decode(event.target.value);
     // console.log(newValueReceived);
     signal.current.push(newValueReceived);
-    signal.current.shift();
-    i++;
-
-    if (i % 50 === 0) {
-      i = 0;
+    if (signalChunk.current.length <= 100) {
+      signalChunk.current.push(newValueReceived);
+    } else {
+      signal.current.push(signalChunk);
+      signalChunk.current = [];
+      signal.current = signal.current.slice(-1000);
       setChartData({
         labels: [],
         datasets: [
@@ -244,18 +299,50 @@ export default function BpEstimation() {
           },
         ],
       });
+      // if (!isRecording.current) {
+      //   isRecording.current = true
+      //   window.sinyal = signal.current
+      //   btnRefEstimateBpStart.current.click();
+      // }
     }
   }
 
   const estimateBPError = () => {
     isRecording.current = false;
     toast({
-      title: window.messageError ?? "error",
+      title: window.messageError,
       status: "error",
       duration: 2000,
       isClosable: true,
     });
   };
+
+  function writeOnCharacteristic(value) {
+    if (bleServer && bleServer.connected) {
+      bleServiceFound
+        .getCharacteristic(ledCharacteristic)
+        .then((characteristic) => {
+          console.log("Found the LED characteristic: ", characteristic.uuid);
+          const data = new Uint8Array([value]);
+          return characteristic.writeValue(data);
+        })
+        .then(() => {
+          console.log("Value written to LEDcharacteristic:", value);
+        })
+        .catch((error) => {
+          console.error("Error writing to the LED characteristic: ", error);
+          writeOnCharacteristic(value);
+        });
+    } else {
+      console.error(
+        "Bluetooth is not connected. Cannot write to characteristic."
+      );
+      window.alert(
+        "Bluetooth is not connected. Cannot write to characteristic. \n Connect to BLE first!"
+      );
+      connectToDevice();
+    }
+  }
 
   function onDisconnected(event) {
     connectToDevice();
@@ -304,10 +391,39 @@ export default function BpEstimation() {
       });
   }
 
+  // sistem indikator koneksi
+  useEffect(() => {
+    let timer;
+    timer = setTimeout(() => {
+      setConnected(false);
+    }, 3000);
+    return () => {
+      setConnected(true);
+      clearTimeout(timer);
+    };
+  }, [sample]);
+
+  useEffect(() => {
+    // if (sensorId == "") setSensorId(sessionStorage.getItem("sensorId") ?? "");
+    setSensorId("L5W1D");
+    // connectToDevice()
+
+    // setInterval(() => {
+    //   window.sinyal = signal.current.map(Number)
+    //   btnRefEstimateBpStart.current.click();
+    // }, 10000);
+  }, []);
+
+  useEffect(() => {
+    console.log(isRecording.current);
+
+    return () => {};
+  }, [isRecording.current]);
+
   return (
     <>
       <div style={{ display: "none" }}>
-        {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
+        <div dangerouslySetInnerHTML={{ __html: myHtml }}></div>
         <button id="estimateBPStart" ref={btnRefEstimateBpStart}></button>
         <button id="estimateBPFinish" onClick={estimateBPFinish}></button>
         <button id="estimateBPError" onClick={estimateBPError}></button>
@@ -316,7 +432,7 @@ export default function BpEstimation() {
         <p id="diastole"></p>
       </div>
 
-      {/* <Center
+      <Center
         position={"fixed"}
         top={0}
         left={0}
@@ -336,7 +452,7 @@ export default function BpEstimation() {
           colorScheme="teal"
           size={"lg"}
         ></Button>
-      </Center> */}
+      </Center>
 
       <Grid
         templateColumns={{ base: "", md: "auto 1fr 1fr" }}
@@ -356,7 +472,10 @@ export default function BpEstimation() {
           <Heading fontSize="xl" fontWeight="semibold" mb={4}>
             Grafik Sinyal Photoplethysmograph (PPG)
           </Heading>
-          <Line options={{ animation: false }} data={chartData} />
+          <Line
+            options={{ animation: false }}
+            data={isAmbilData ? placeholderChart : chartData}
+          />
         </GridItem>
 
         <GridItem
@@ -372,18 +491,33 @@ export default function BpEstimation() {
             <Heading fontSize="xl" fontWeight="semibold" mb={2}>
               Aksi
             </Heading>
-            <Button
-              onClick={() => {
-                connectToDevice();
-                setIsSensorConnected(true);
-              }}
-              size="sm"
-              variant="link"
-              colorScheme="teal"
-              mb={2}
-            >
-              Connect to Sensor
-            </Button>
+            {sensorId === "" ? (
+              <Button
+                onClick={() => {
+                  connectToDevice();
+                  setSensorId("a");
+                }}
+                size="sm"
+                variant="link"
+                colorScheme="teal"
+                mb={2}
+              >
+                Connect to Sensor
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  connectToDevice();
+                }}
+                size="sm"
+                variant="link"
+                colorScheme="teal"
+                mb={2}
+              >
+                {" "}
+                sensor <i>connected</i>
+              </Button>
+            )}
           </Flex>
           <Input
             placeholder="Masukan Nama Responden"
@@ -391,30 +525,13 @@ export default function BpEstimation() {
             value={inputName}
             onChange={(event) => setInputName(event.target.value)}
           />
-
-          <Flex mt={2}>
-            <Input
-              placeholder="Usia"
-              shadow={"sm"}
-              value={inputAge}
-              onChange={(event) => setInputAge(event.target.value)}
-              w={140}
-            />
-            <Input
-              w={150}
-              placeholder="Berat Badan"
-              shadow={"sm"}
-              value={inputWeight}
-              onChange={(event) => setInputWeight(event.target.value)}
-            />
-            <Input
-              w={150}
-              placeholder="Suhu Tubuh"
-              shadow={"sm"}
-              value={inputTemperature}
-              onChange={(event) => setInputTemperature(event.target.value)}
-            />
-          </Flex>
+          <Input
+            mt={2}
+            placeholder="Masukan Usia Respoden"
+            shadow={"sm"}
+            value={inputAge}
+            onChange={(event) => setInputAge(event.target.value)}
+          />
           <Flex mt={2}>
             <Input
               placeholder="Actual Systole"
@@ -432,7 +549,7 @@ export default function BpEstimation() {
           </Flex>
           <Flex mt={2}>
             <Button colorScheme="teal" w="full" onClick={startAmbilData}>
-              Rekam PPG
+              Jalankan Estimasi Tekanan Darah
             </Button>
           </Flex>
         </GridItem>
@@ -450,11 +567,11 @@ export default function BpEstimation() {
             Hasil estimasi
           </Heading>
           <Text align={"center"} my={{ base: 10, md: 16 }} fontSize={"lg"}>
-            Systole: <b>{result?.systole}</b>
+            Systole: <b>{isAmbilData ? "..." : result?.systole}</b>
             <br />
-            Diastole: <b>{result?.diastole}</b>
+            Diastole: <b>{isAmbilData ? "..." : result?.diastole}</b>
             <br />
-            {suhu ? "Suhu: " + suhu : ""}
+            {isAmbilData ? "..." : suhu ? "Suhu: " + suhu : ""}
           </Text>
         </GridItem>
 
@@ -477,72 +594,105 @@ export default function BpEstimation() {
             ml={16}
             mb={{ base: 10, md: 0 }}
           >
-            bpm: {result?.bpm}
+            bpm: {isAmbilData ? "..." : result?.bpm}
             <br />
-            ibi: {result?.ibi}
+            ibi: {isAmbilData ? "..." : result?.ibi}
             <br />
-            sdnn: {result?.sdnn}
+            sdnn: {isAmbilData ? "..." : result?.sdnn}
             <br />
-            rmssd: {result?.rmssd}
+            rmssd: {isAmbilData ? "..." : result?.rmssd}
             <br />
-            mad: {result?.mad}
+            mad: {isAmbilData ? "..." : result?.mad}
           </Text>
         </GridItem>
+
+        {isAmbilData && (
+          <Center
+            position={"fixed"}
+            top={0}
+            left={0}
+            w={"full"}
+            h={"100vh"}
+            backdropFilter={"blur(3px)"}
+            zIndex={100}
+          >
+            <Button
+              background={"teal"}
+              p={10}
+              rounded={"xl"}
+              shadow={"2xl"}
+              isLoading
+              loadingText="Mengambil Data"
+              colorScheme="teal"
+              size={"lg"}
+            ></Button>
+          </Center>
+        )}
       </Grid>
+
+      {/* <ModalScanSensor
+        isOpen={isOpen}
+        onClose={onClose}
+        sensorId={sensorId}
+        setSensorId={setSensorId}
+      /> */}
     </>
   );
 }
 
-// const myHtml = String.raw`
-// <py-script>
-// import heartpy as hp
-// import matplotlib.pyplot as plt
-// import numpy as np
-// from pyscript import window, document
-// import pickle
+const myHtml = String.raw`
+<py-script>
+import heartpy as hp
+import matplotlib.pyplot as plt
+import numpy as np
+from pyscript import window, document
+import pickle
 
-// with open(f"modelDiastole.pickle", "rb") as file:
-//   modelDiastole = pickle.load(file)
+with open(f"modelDiastole.pickle", "rb") as file:
+  modelDiastole = pickle.load(file)
 
-// with open(f"modelSystole.pickle", "rb") as file:
-//   modelSystole = pickle.load(file)
+with open(f"modelSystole.pickle", "rb") as file:
+  modelSystole = pickle.load(file)
 
-// def estimateBPStart(event):
-//   print("bp estimation python start")
-//   ppg_feature = []
+def estimateBPStart(event):
+  print("bp estimation python start")
+  ppg_feature = []
 
-//   sinyal = window.sinyal
-//   print(np.array(sinyal))
+  sinyal = window.sinyal
+  print(np.array(sinyal))
 
-//   try:
-//     wd, m = hp.process(np.array(sinyal), sample_rate = 100)
-//   except Exception as e:
-//     window.alert(e)
-//     return
+  try:
+    wd, m = hp.process(np.array(sinyal), sample_rate = 100)
+  except Exception as e:
+    window.messageError(e)
+    document.getElementById("estimateBPError").click()
+    return
+  
+  for measure in m.keys():
+    try:
+      ppg_feature[0].append(m[measure])
+    except:
+      ppg_feature.append([])
+      ppg_feature[0].append(m[measure])
 
-//   for measure in m.keys():
-//     try:
-//       ppg_feature[0].append(m[measure])
-//     except:
-//       ppg_feature.append([])
-//       ppg_feature[0].append(m[measure])
+  try:
+    ppg = ppg_feature[0] 
+    systole = modelSystole.predict(ppg_feature)[0]
+    diastole = modelDiastole.predict(ppg_feature)[0]
+  except Exception as e:
+    window.messageError(e)
+    document.getElementById("estimateBPError").click()
+    return  
+  
+  document.getElementById("ppg").innerHTML = ppg
+  document.getElementById("systole").innerHTML = systole
+  document.getElementById("diastole").innerHTML = diastole
+  document.getElementById("estimateBPFinish").click()
 
-//   try:
-//     ppg = ppg_feature[0]
-//     systole = modelSystole.predict(ppg_feature)[0]
-//     diastole = modelDiastole.predict(ppg_feature)[0]
-//   except Exception as e:
-//     window.alert(e)
-//     return
 
-//   document.getElementById("ppg").innerHTML = ppg
-//   document.getElementById("systole").innerHTML = systole
-//   document.getElementById("diastole").innerHTML = diastole
-//   document.getElementById("estimateBPFinish").click()
+document.getElementById("estimateBPStart").onclick = estimateBPStart
 
-// document.getElementById("estimateBPStart").onclick = estimateBPStart
+document.getElementById("preparingEnvironment").style.display = "none"
 
-// document.getElementById("preparingEnvironment").style.display = "none"
-
-// </py-script>
-//   `;
+</py-script>
+  `;
