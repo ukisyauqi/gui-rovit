@@ -47,7 +47,7 @@ export default function Login() {
             adalah produk robot untuk membantu penanganan COVID-19 di lingkungan
             rumah sakit yang dilengkapi dengan akuisisi data biosinyal,
             pemrosesan sinyal dan gambar, sistem vision, pemetaan, lokalisasi,
-            dan intelligence control.
+            dan intelligence control
           </Text>
         </Box>
       </Center>
@@ -63,7 +63,7 @@ export default function Login() {
           <br /><br />
           <RadioGroup colorScheme="teal" onChange={setRoom} value={room}>
             <Stack direction="column">
-              <Radio value="control-room/preparation-setup">Control Room</Radio>
+              <Radio value="control-room/bp-estimation">Control Room</Radio>
               <Radio value="patient-room">Patient Room</Radio>
             </Stack>
           </RadioGroup>

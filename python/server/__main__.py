@@ -22,7 +22,7 @@ def process_data():
     estimated_systole = systole_model.predict(data)
     estimated_diastole = diastole_model.predict(data)
 
-    return jsonify({'status': 'success', 'message': 'Data berhasil diproses', 'estimated_systole': estimated_systole[0], 'estimated_diastole' : estimated_diastole[0]})
+    return jsonify({'status': 'success', 'message': 'Data berhasil diproses', 'estimated_systole': estimated_systole[0], 'estimated_diastole' : estimated_diastole[0], **m})
   except Exception as e:
     return jsonify({'status': 'error','message': str(e)})
     

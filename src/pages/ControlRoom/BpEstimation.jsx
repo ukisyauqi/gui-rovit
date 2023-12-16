@@ -35,6 +35,7 @@ import { writeRTDB, rtdb, storage } from "../../firebase";
 import { onValue, ref } from "firebase/database";
 import { getDownloadURL } from "firebase/storage";
 import { Line } from "react-chartjs-2";
+import axios from 'axios';
 
 import {
   Chart as ChartJS,
@@ -96,7 +97,7 @@ export default function BpEstimation() {
   const btnRefEstimateBpStart = useRef(null);
   const isRecording = useRef(false);
   const [suhu, setSuhu] = useState(0);
-  const signal = useRef(Array(3000).fill(0));
+  const signal = useRef(Array(2000).fill(0));
   const [isSensorConnected, setIsSensorConnected] = useState(false);
 
   // helper functions
@@ -114,36 +115,43 @@ export default function BpEstimation() {
     return formattedDate;
   }
 
-  // main functions
   const startAmbilData = () => {
-    // window.sinyal = signal.current.map((el) => {
-    //   const res = Number(el);
-    //   if (isNaN(res)) return 1500;
-    //   return res;
-    // });
-    // btnRefEstimateBpStart.current.click();
-    writeRTDB("data/" + getTimeStamp(), {
-      nama: inputName,
-      umur: inputAge,
-      weight: inputWeight,
-      temperature: inputTemperature,
-      inputSystole: inputSystole,
-      inputDiastole: inputDiastole,
-      sinyal: signal.current,
-      systole: 0,
-      diastole: 0,
-      bpm: 0,
-      ibi: 0,
-      sdnn: 0,
-      rmssd: 0,
-      mad: 0,
-    });
-    toast({
-      title: "PPG Recorded",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
+    axios.post("https://api.ppg.ctailab.com/api/process-data", { "age": inputAge, "weight": inputWeight, "ppg": signal.current })
+      .then((response) => {
+        console.log(response)
+        writeRTDB("data/" + getTimeStamp(), {
+          nama: inputName,
+          umur: inputAge,
+          weight: inputWeight,
+          temperature: inputTemperature,
+          inputSystole: inputSystole,
+          inputDiastole: inputDiastole,
+          systole: response.estimated_systole,
+          diastole: response.estimated_diastole,
+          sinyal: signal.current,
+          bpm: response.bpm,
+          ibi: response.ibi,
+          sdnn: response.sdnn,
+          rmssd: response.rmssd,
+          mad: response.mad,
+        })
+        toast({
+          title: "Estimate BP Success",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        })
+      })
+      .catch(function (error) {
+        console.log(error);
+        toast({
+          title: "Estimate BP Error",
+          description: error.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        })
+      });
   };
 
   const estimateBPFinish = () => {
