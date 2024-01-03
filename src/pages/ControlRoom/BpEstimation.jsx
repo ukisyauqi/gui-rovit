@@ -116,9 +116,8 @@ export default function BpEstimation() {
   }
 
   const startAmbilData = () => {
-    axios.post("https://api.ppg.ctailab.com/api/process-data", { "age": inputAge, "weight": inputWeight, "ppg": signal.current })
+    axios.post("https://api.ppg.ctailab.com/api/process-data", { "age": inputAge, "weight": inputWeight, "ppg": signal.current.map((str) => parseFloat(str, 10)) })
       .then((response) => {
-        console.log(response)
         writeRTDB("data/" + getTimeStamp(), {
           nama: inputName,
           umur: inputAge,
@@ -126,14 +125,30 @@ export default function BpEstimation() {
           temperature: inputTemperature,
           inputSystole: inputSystole,
           inputDiastole: inputDiastole,
-          systole: response.estimated_systole,
-          diastole: response.estimated_diastole,
+          systole: response.data.estimated_systole,
+          diastole: response.data.estimated_diastole,
           sinyal: signal.current,
-          bpm: response.bpm,
-          ibi: response.ibi,
-          sdnn: response.sdnn,
-          rmssd: response.rmssd,
-          mad: response.mad,
+          bpm: response.data.bpm,
+          ibi: response.data.ibi,
+          sdnn: response.data.sdnn,
+          rmssd: response.data.rmssd,
+          mad: response.data.hr_mad,
+        })
+        setResult({
+          nama: inputName,
+          umur: inputAge,
+          weight: inputWeight,
+          temperature: inputTemperature,
+          inputSystole: inputSystole,
+          inputDiastole: inputDiastole,
+          systole: response.data.estimated_systole,
+          diastole: response.data.estimated_diastole,
+          sinyal: signal.current,
+          bpm: response.data.bpm,
+          ibi: response.data.ibi,
+          sdnn: response.data.sdnn,
+          rmssd: response.data.rmssd,
+          mad: response.data.hr_mad,
         })
         toast({
           title: "Estimate BP Success",
@@ -152,53 +167,6 @@ export default function BpEstimation() {
           isClosable: true,
         })
       });
-  };
-
-  const estimateBPFinish = () => {
-    const estimatedSystole = document.getElementById("systole").innerHTML;
-    const estimatedDiastole = document.getElementById("diastole").innerHTML;
-    const ppgFeature = JSON.parse(document.getElementById("ppg").innerHTML);
-
-    setResult({
-      systole: parseFloat(estimatedSystole).toFixed(2),
-      diastole: parseFloat(estimatedDiastole).toFixed(2),
-      bpm: Math.round(ppgFeature[0]),
-      ibi: Math.round(ppgFeature[1]),
-      sdnn: Math.round(ppgFeature[2]),
-      rmssd: Math.round(ppgFeature[3]),
-      mad: Math.round(ppgFeature[4]),
-    });
-
-    writeRTDB("data/" + getTimeStamp(), {
-      nama: inputName,
-      umur: inputAge,
-      weight: inputWeight,
-      temperature: inputTemperature,
-      inputSystole: inputSystole,
-      inputDiastole: inputDiastole,
-      sinyal: window.sinyal,
-      systole: parseFloat(estimatedSystole).toFixed(2),
-      diastole: parseFloat(estimatedDiastole).toFixed(2),
-      bpm: Math.round(ppgFeature[0]),
-      ibi: Math.round(ppgFeature[1]),
-      sdnn: Math.round(ppgFeature[2]),
-      rmssd: Math.round(ppgFeature[3]),
-      mad: Math.round(ppgFeature[4]),
-    });
-
-    isRecording.current = false;
-
-    // const text = `pengukuran selesai, tekanan darah kamu, ${Math.round(
-    //   estimatedSystole
-    // )} per ${Math.round(estimatedDiastole)}, dengan suhu tubuh
-    //   ${suhu}
-    //  derajat selsius`;
-    // speak({ text: text, voice: voices[3] });
-
-    // setInputName("");
-    // setInputAge("");
-    // setInputSystole("");
-    // setInputDiastole("");
   };
 
   // USE EFFECTS
@@ -317,7 +285,7 @@ export default function BpEstimation() {
       <div style={{ display: "none" }}>
         {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
         <button id="estimateBPStart" ref={btnRefEstimateBpStart}></button>
-        <button id="estimateBPFinish" onClick={estimateBPFinish}></button>
+        {/* <button id="estimateBPFinish" onClick={estimateBPFinish}></button> */}
         <button id="estimateBPError" onClick={estimateBPError}></button>
         <p id="ppg"></p>
         <p id="systole"></p>
@@ -500,57 +468,3 @@ export default function BpEstimation() {
     </>
   );
 }
-
-// const myHtml = String.raw`
-// <py-script>
-// import heartpy as hp
-// import matplotlib.pyplot as plt
-// import numpy as np
-// from pyscript import window, document
-// import pickle
-
-// with open(f"modelDiastole.pickle", "rb") as file:
-//   modelDiastole = pickle.load(file)
-
-// with open(f"modelSystole.pickle", "rb") as file:
-//   modelSystole = pickle.load(file)
-
-// def estimateBPStart(event):
-//   print("bp estimation python start")
-//   ppg_feature = []
-
-//   sinyal = window.sinyal
-//   print(np.array(sinyal))
-
-//   try:
-//     wd, m = hp.process(np.array(sinyal), sample_rate = 100)
-//   except Exception as e:
-//     window.alert(e)
-//     return
-
-//   for measure in m.keys():
-//     try:
-//       ppg_feature[0].append(m[measure])
-//     except:
-//       ppg_feature.append([])
-//       ppg_feature[0].append(m[measure])
-
-//   try:
-//     ppg = ppg_feature[0]
-//     systole = modelSystole.predict(ppg_feature)[0]
-//     diastole = modelDiastole.predict(ppg_feature)[0]
-//   except Exception as e:
-//     window.alert(e)
-//     return
-
-//   document.getElementById("ppg").innerHTML = ppg
-//   document.getElementById("systole").innerHTML = systole
-//   document.getElementById("diastole").innerHTML = diastole
-//   document.getElementById("estimateBPFinish").click()
-
-// document.getElementById("estimateBPStart").onclick = estimateBPStart
-
-// document.getElementById("preparingEnvironment").style.display = "none"
-
-// </py-script>
-//   `;
