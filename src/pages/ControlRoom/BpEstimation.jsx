@@ -391,7 +391,7 @@ export default function BpEstimation() {
               onChange={(event) => setInputTemperature(event.target.value)}
             />
           </Flex>
-          <Flex mt={2}>
+          <Flex mt={2} visibility={"hidden"}>
             <Input
               placeholder="Actual Systole"
               shadow={"sm"}
