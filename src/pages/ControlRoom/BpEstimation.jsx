@@ -391,7 +391,8 @@ export default function BpEstimation() {
               onChange={(event) => setInputTemperature(event.target.value)}
             />
           </Flex>
-          <Flex mt={2} visibility={"hidden"}>
+          {/* <Flex mt={2} visibility={"hidden"}> */}
+          <Flex mt={2}>
             <Input
               placeholder="Actual Systole"
               shadow={"sm"}
@@ -408,7 +409,7 @@ export default function BpEstimation() {
           </Flex>
           <Flex mt={2}>
             <Button colorScheme="teal" w="full" onClick={startAmbilData}>
-              Rekam PPG
+              Mulai Estimasi
             </Button>
           </Flex>
         </GridItem>
@@ -430,7 +431,7 @@ export default function BpEstimation() {
             <br />
             Diastole: <b>{result?.diastole}</b>
             <br />
-            {suhu ? "Suhu: " + suhu : ""}
+            {/* {suhu ? "Suhu: " + suhu : ""} */}
           </Text>
         </GridItem>
 

@@ -14,6 +14,7 @@ def process_data():
   try:
     data = request.get_json()
     
+    # feature extraction
     _, m = hp.process(np.array(data['ppg']), sample_rate = 100.0)
   
     data.pop("ppg")
