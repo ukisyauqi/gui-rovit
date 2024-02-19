@@ -194,6 +194,7 @@ export default function BpEstimation() {
   var sensorCharacteristicFound;
 
   let i = 0;
+  let timeout;
 
   function handleCharacteristicChange(event) {
     const newValueReceived = new TextDecoder().decode(event.target.value);
@@ -203,6 +204,20 @@ export default function BpEstimation() {
     i++;
 
     if (i % 50 === 0) {
+      setIsSensorConnected(true)
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        toast({
+          title: "Sensor Disconected",
+          status: "error",
+          duration: 1000,
+          isClosable: true,
+        });
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000);
+      }, 1000);
+
       i = 0;
       setChartData({
         labels: [],
@@ -234,7 +249,8 @@ export default function BpEstimation() {
   };
 
   function onDisconnected(event) {
-    connectToDevice();
+    console.log('Device Disconnected:', event.target.device.name);
+    window.location.reload()
   }
 
   function connectToDevice() {
@@ -283,9 +299,7 @@ export default function BpEstimation() {
   return (
     <>
       <div style={{ display: "none" }}>
-        {/* <div dangerouslySetInnerHTML={{ __html: myHtml }}></div> */}
         <button id="estimateBPStart" ref={btnRefEstimateBpStart}></button>
-        {/* <button id="estimateBPFinish" onClick={estimateBPFinish}></button> */}
         <button id="estimateBPError" onClick={estimateBPError}></button>
         <p id="ppg"></p>
         <p id="systole"></p>
@@ -343,6 +357,7 @@ export default function BpEstimation() {
           rounded="md"
           mt={{ base: 5, md: 0 }}
           shadow="md"
+          width={{ base: "100vw", md: "fit-content" }}
         >
           <Flex justifyContent="space-between">
             <Heading fontSize="xl" fontWeight="semibold" mb={2}>
@@ -358,7 +373,7 @@ export default function BpEstimation() {
               colorScheme="teal"
               mb={2}
             >
-              Connect to Sensor
+              {isSensorConnected ? "Connected" : "Connect to Sensor"}
             </Button>
           </Flex>
           <Input
