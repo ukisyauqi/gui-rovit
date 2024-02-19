@@ -36,6 +36,7 @@ import { onValue, ref } from "firebase/database";
 import { getDownloadURL } from "firebase/storage";
 import { Line } from "react-chartjs-2";
 import axios from 'axios';
+import { SENSOR_NAME, SERVICE_UUID, SENSOR_CHARACTERISTIC_UUID } from "../../util/alat_sensor_utility";
 
 import {
   Chart as ChartJS,
@@ -194,19 +195,21 @@ export default function BpEstimation() {
   var sensorCharacteristicFound;
 
   let i = 0;
-  let timeout;
+  let disconnectTimeout;
+  let newValueReceived
 
   function handleCharacteristicChange(event) {
-    const newValueReceived = new TextDecoder().decode(event.target.value);
+    newValueReceived = new TextDecoder().decode(event.target.value);
     // console.log(newValueReceived);
+    setIsSensorConnected(true)
     signal.current.push(newValueReceived);
     signal.current.shift();
     i++;
 
     if (i % 50 === 0) {
-      setIsSensorConnected(true)
-      clearTimeout(timeout)
-      timeout = setTimeout(() => {
+      clearTimeout(disconnectTimeout)
+      disconnectTimeout = setTimeout(() => {
+        setIsSensorConnected(false)
         toast({
           title: "Sensor Disconected",
           status: "error",
@@ -254,26 +257,28 @@ export default function BpEstimation() {
   }
 
   function connectToDevice() {
+    let sensorIndex
     console.log("Initializing Bluetooth...");
     navigator.bluetooth
       .requestDevice({
-        filters: [{ name: deviceName }],
-        optionalServices: [bleService],
+        filters: SENSOR_NAME.map(name => ({ name })),
+        optionalServices: SERVICE_UUID 
       })
       .then((device) => {
         console.log("Device Selected:", device.name);
+        sensorIndex = SENSOR_NAME.indexOf(device.name)
         device.addEventListener("gattservicedisconnected", onDisconnected);
         return device.gatt.connect();
       })
       .then((gattServer) => {
         bleServer = gattServer;
         console.log("Connected to GATT Server");
-        return bleServer.getPrimaryService(bleService);
+        return bleServer.getPrimaryService(SERVICE_UUID[sensorIndex]);
       })
       .then((service) => {
         bleServiceFound = service;
         console.log("Service discovered:", service.uuid);
-        return service.getCharacteristic(sensorCharacteristic);
+        return service.getCharacteristic(SENSOR_CHARACTERISTIC_UUID[sensorIndex]);
       })
       .then((characteristic) => {
         console.log("Characteristic discovered:", characteristic.uuid);
@@ -366,7 +371,6 @@ export default function BpEstimation() {
             <Button
               onClick={() => {
                 connectToDevice();
-                setIsSensorConnected(true);
               }}
               size="sm"
               variant="link"
