@@ -117,7 +117,7 @@ export default function BpEstimation() {
   }
 
   const startAmbilData = () => {
-    axios.post("https://api.ppg.ctailab.com/api/process-data", { "age": inputAge, "weight": inputWeight, "ppg": signal.current.map((str) => parseFloat(str, 10)) })
+    axios.post("http://34.128.120.171:5000", { "age": inputAge, "weight": inputWeight, "ppg": signal.current.map((str) => parseFloat(str, 10)) })
       .then((response) => {
         writeRTDB("data/" + getTimeStamp(), {
           nama: inputName,
