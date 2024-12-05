@@ -61,11 +61,12 @@ export default function Item({timestamp, value}) {
       <Td textAlign="center">{value.nama ?? " - "}</Td>
       <Td textAlign="center">{value.umur ?? " - "}</Td>
       <Td textAlign="center">{value.weight ?? " - "}</Td>
-      <Td textAlign="center">{value.temperature ?? " - "}</Td>
+      <Td textAlign="center">{value.inputRespiration ?? " - "}</Td>
       <Td textAlign="center">
         {value.inputSystole ?? " - "}/
         {value.inputDiastole ?? " - "}
       </Td>
+      <Td textAlign="center">{value.respiration ?? " - "}</Td>
       <Td textAlign="center">
         {value.systole ?? " - "}/{value.diastole ?? " - "}
       </Td>
@@ -73,7 +74,7 @@ export default function Item({timestamp, value}) {
       <Td textAlign="center">{value.ibi ?? " - "}</Td>
       <Td textAlign="center">{value.sdnn ?? " - "}</Td>
       <Td textAlign="center">{value.rmssd ?? " - "}</Td>
-      <Td textAlign="center">{value.mad ?? " - "}</Td>
+      <Td textAlign="center">{value.sdsd ?? " - "}</Td>
 
       <Td>
         <Flex alignItems="center">

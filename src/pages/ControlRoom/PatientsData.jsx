@@ -79,9 +79,10 @@ export default function PatientsData() {
     { label: "name", key: "nama" },
     { label: "age", key: "umur" },
     { label: "weight", key: "weight" },
-    { label: "temperature", key: "temperature" },
+    { label: "actual_respiratory_rate", key: "inputRespiration" },
     { label: "actual_systole", key: "inputSystole" },
     { label: "actual_diastole", key: "inputDiastole" },
+    { label: "estimated_respiratory_rate", key: "respiration" },
     { label: "estimated_systole", key: "systole" },
     { label: "estimated_diastole", key: "diastole" },
     { label: "bpm", key: "bpm" },
@@ -89,6 +90,7 @@ export default function PatientsData() {
     { label: "sdnn", key: "sdnn" },
     { label: "rmssd", key: "rmssd" },
     { label: "hr_mad", key: "mad" },
+    { label: "sdsd", key: "sdsd" },
     { label: "ppg", key: "sinyal" },
     { label: "timestamp", key: "timestamp" },
   ];
@@ -156,14 +158,15 @@ export default function PatientsData() {
                   <Th textAlign="center">Nama</Th>
                   <Th textAlign="center">Umur</Th>
                   <Th textAlign="center">Berat Badan</Th>
-                  <Th textAlign="center">Suhu</Th>
+                  <Th textAlign="center">Actual Respiration</Th>
                   <Th textAlign="center">Actual SYS/DIA</Th>
+                  <Th textAlign="center">Estimated Respiration</Th>
                   <Th textAlign="center">Estimated SYS/DIA</Th>
                   <Th textAlign="center">BPM</Th>
                   <Th textAlign="center">IBI</Th>
                   <Th textAlign="center">SDNN</Th>
                   <Th textAlign="center">RMSSD</Th>
-                  <Th textAlign="center">MAD</Th>
+                  <Th textAlign="center">SDSD</Th>
                   <Th>Timestamp</Th>
                 </Tr>
               </Thead>
