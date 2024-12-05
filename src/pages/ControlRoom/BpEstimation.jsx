@@ -93,7 +93,7 @@ export default function BpEstimation() {
     ibi: "",
     sdnn: "",
     rmssd: "",
-    mad: "",
+    sdsd: "",
   });
   const btnRefEstimateBpStart = useRef(null);
   const isRecording = useRef(false);
@@ -117,8 +117,9 @@ export default function BpEstimation() {
   }
 
   const startAmbilData = () => {
-    axios.post("https://api.ppg.millenia911.net", { "age": inputAge, "weight": inputWeight, "ppg": signal.current.map((str) => parseFloat(str, 10)) })
+    axios.post("https://api.ppg.millenia911.net", { "age": parseInt(inputAge), "weight": parseInt(inputWeight), "ppg": signal.current.map((str) => parseFloat(str, 10)) })
       .then((response) => {
+        console.log(response.data)
         writeRTDB("data/" + getTimeStamp(), {
           nama: inputName,
           umur: inputAge,
@@ -128,12 +129,13 @@ export default function BpEstimation() {
           inputDiastole: inputDiastole,
           systole: response.data.estimated_systole,
           diastole: response.data.estimated_diastole,
+          respiration: response.data.estimated_respiratory_rate,
           sinyal: signal.current,
           bpm: response.data.bpm,
           ibi: response.data.ibi,
           sdnn: response.data.sdnn,
           rmssd: response.data.rmssd,
-          mad: response.data.hr_mad,
+          sdsd: response.data.sdsd,
         })
         setResult({
           nama: inputName,
@@ -144,12 +146,13 @@ export default function BpEstimation() {
           inputDiastole: inputDiastole,
           systole: response.data.estimated_systole,
           diastole: response.data.estimated_diastole,
+          respiration: response.data.estimated_respiratory_rate,
           sinyal: signal.current,
           bpm: response.data.bpm,
           ibi: response.data.ibi,
           sdnn: response.data.sdnn,
           rmssd: response.data.rmssd,
-          mad: response.data.hr_mad,
+          sdsd: response.data.sdsd,
         })
         toast({
           title: "Estimate BP Success",
@@ -402,13 +405,6 @@ export default function BpEstimation() {
               value={inputWeight}
               onChange={(event) => setInputWeight(event.target.value)}
             />
-            <Input
-              w={150}
-              placeholder="Suhu Tubuh"
-              shadow={"sm"}
-              value={inputTemperature}
-              onChange={(event) => setInputTemperature(event.target.value)}
-            />
           </Flex>
           {/* <Flex mt={2} visibility={"hidden"}> */}
           <Flex mt={2}>
@@ -450,6 +446,8 @@ export default function BpEstimation() {
             <br />
             Diastole: <b>{result?.diastole}</b>
             <br />
+            Respiration: <b>{result?.respiration}</b>
+            <br />
             {/* {suhu ? "Suhu: " + suhu : ""} */}
           </Text>
         </GridItem>
@@ -481,7 +479,7 @@ export default function BpEstimation() {
             <br />
             rmssd: {result?.rmssd}
             <br />
-            mad: {result?.mad}
+            sdsd: {result?.sdsd}
           </Text>
         </GridItem>
       </Grid>
